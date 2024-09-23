@@ -1,0 +1,27 @@
+! this data is inconsistent with the thielemann library (different mass excess)
+! it is (why??) : mass_excess=mass_excess_thiel -(A-Z)*(delta_mass_excess_neutron)
+! + Z *(delta_mass_excess_proton)
+
+      data ((pc_nuc(ii,ij),ij=1,7),ii=1,20) / &
+       0._rk,  1._rk,  8.375_rk, 2._rk, 0.000e0_rk,-0.100e3_rk,0.000e0_rk,             & !n1
+       1._rk,  1._rk,  7.082_rk, 2._rk, 0.000e0_rk,-0.100e3_rk,0.000e0_rk,             & !p1
+       2._rk,  4._rk,  2.618_rk, 1._rk, 0.000e0_rk,-0.100e3_rk,0.000e0_rk,             & !He4
+       6._rk, 12._rk,  0.580_rk, 1._rk, 0.000e0_rk,-0.100e3_rk,0.000e0_rk,             & !C12
+       7._rk, 14._rk,  3.542_rk, 1._rk, 0.000e0_rk,-0.100e3_rk,0.000e0_rk,             & !N14
+       8._rk, 16._rk, -3.964_rk, 1._rk, 0.000e0_rk,-0.100e3_rk,0.000e0_rk,             & !O16
+      10._rk, 20._rk, -6.077_rk, 1._rk,-0.182e2_rk, 0.129e1_rk,0.347e-1_rk,            & !Ne20
+      12._rk, 24._rk,-12.771_rk, 1._rk,-0.151e2_rk, 0.125e1_rk,0.407e-1_rk,            & !Mg24
+      14._rk, 28._rk,-20.139_rk, 1._rk,-0.200e2_rk, 0.132e1_rk,0.310e-1_rk,            & !Si28
+      16._rk, 32._rk,-24.470_rk, 1._rk,-0.232e2_rk, 0.433e0_rk,0.132e0_rk,             & !S32
+      18._rk, 36._rk,-28.493_rk, 1._rk,-0.189e2_rk,-0.581e-2_rk,0.170e0_rk,            & !Ar36
+      20._rk, 40._rk,-32.915_rk, 1._rk,-0.415e2_rk, 0.164e1_rk,0.148e0_rk,             & !Ca40 
+      22._rk, 44._rk,-35.420_rk, 1._rk,-0.111e2_rk, 0.629e0_rk,0.173e0_rk,             & !Ti44
+      24._rk, 48._rk,-40.499_rk, 1._rk,-0.610e1_rk,-0.374e-1_rk,0.212e0_rk,            & !Cr48
+      25._rk, 54._rk,-51.924_rk,10._rk,-0.531e0_rk,-0.157e1_rk,0.351e0_rk,             & !Mn54
+      26._rk, 56._rk,-56.877_rk, 1._rk,-0.740e1_rk, 0.498e-1_rk,0.246e0_rk,            & !Fe56
+      26._rk, 60._rk,-56.495_rk, 1._rk,-0.549e1_rk,-0.102e0_rk,0.281e0_rk,             & !Fe60
+      28._rk, 56._rk,-51.197_rk, 1._rk,-0.254e2_rk,-0.107e1_rk,0.347e0_rk,             & !Ni56
+      28._rk, 70._rk,-60.250_rk, 1._rk, 0.000e0_rk,-0.100e3_rk,0.000e0_rk,!ni70
+!      28._rk,90._rk, 49.330_rk  1._rk, 0.000e0_rk,-0.100D+03_rk,0.000e0_rk,           & !ni90
+      28._rk,120._rk, 0._rk    , 1._rk, 0.000e0_rk,-0.100e3_rk,0.000e0_rk,             & !niXX
+      40._rk,200._rk, 0._rk    , 1._rk, 0.000e0_rk,-0.100e3_rk,0.000e0_rk/!xxXX

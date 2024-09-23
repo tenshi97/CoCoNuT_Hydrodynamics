@@ -1,0 +1,52 @@
+#if (!defined(RATE)) || (!defined(FIELD)) || (!defined(ARRAY_SIZE))
+#error You have to define RATE, FIELD and ARRAY_SIZE
+#endif
+
+#if !( (ARRAY_SIZE == 3) || (ARRAY_SIZE == 4) || (ARRAY_SIZE == 5) )
+#error ARRAY_SIZE has to be out of 3,4 or 5
+#endif
+
+#if ARRAY_SIZE == 3
+    RATE = (1._rk-x_dn)*(                                             &
+        (1._rk-x_tm)*( (1._rk-x_yel)*FIELD(idn, itm, iyel  )          &
+                             +x_yel *FIELD(idn, itm, iyel1) )         &
+              +x_tm *( (1._rk-x_yel)*FIELD(idn, itm1,iyel  )          &
+                             +x_yel *FIELD(idn, itm1,iyel1) ) )       &
+              +x_dn *(                                                &
+        (1._rk-x_tm)*( (1._rk-x_yer)*FIELD(idn1,itm, iyer  )          &
+                             +x_yer *FIELD(idn1,itm, iyer1) )         &
+              +x_tm *( (1._rk-x_yer)*FIELD(idn1,itm1,iyer  )          &
+                             +x_yer *FIELD(idn1,itm1,iyer1) ) )
+#endif 
+
+
+#if ARRAY_SIZE == 4
+    RATE = (1._rk-x_ld)*(                                              &
+        (1._rk-x_tm)*((1._rk-x_yel)* FIELD(idn, itm, iyel,:)           &
+                            +x_yel * FIELD(idn, itm, iyel1,:))         &
+              +x_tm *((1._rk-x_yel)* FIELD(idn, itm1,iyel,:)           &
+                            +x_yel * FIELD(idn, itm1,iyel1,:)))        &
+                 +x_ld *(                                              &
+        (1._rk-x_tm)*( (1._rk-x_yer)*FIELD(idn1,itm, iyer,:)           &
+                             +x_yer *FIELD(idn1,itm, iyer1,:))         &
+              +x_tm *( (1._rk-x_yer)*FIELD(idn1,itm1,iyer,:)           &
+                             +x_yer *FIELD(idn1,itm1,iyer1,:)))
+#endif 
+
+#if ARRAY_SIZE == 5
+    RATE = (1._rk-x_dn)*(                                              &
+        (1._rk-x_tm)*((1._rk-x_yel)*FIELD(idn, itm ,iyel, ie,ie1)      &
+                            +x_yel *FIELD(idn, itm ,iyel1,ie,ie1))     &
+              +x_tm *((1._rk-x_yel)*FIELD(idn, itm1,iyel ,ie,ie1 )     &
+                            +x_yel *FIELD(idn, itm1,iyel1,ie,ie1)))    &
+               +x_dn *(                                                &
+        (1._rk-x_tm)*((1._rk-x_yer)*FIELD(idn1, itm ,iyer,ie,ie1)      &
+                            +x_yer *FIELD(idn1, itm,iyer1,ie,ie1))     &
+              +x_tm *((1._rk-x_yer)*FIELD(idn1,itm1,iyer ,ie,ie1)      &
+                            +x_yer *FIELD(idn1,itm1,iyer1,ie,ie1)))
+
+#endif 
+
+#undef ARRAY_SIZE
+#undef RATE
+#undef FIELD

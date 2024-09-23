@@ -1,0 +1,24 @@
+MPI interface for Forcheck
+
+1. Introduction
+MPI is a C library. The Fortran binding issues are described at the MPI site.
+When analyzing a Fortran program which references MPI library procedures with Forcheck
+Forcheck will report the differences in argument type for choice arguments and differences
+in shape and rank for assumed size arrays.
+By applying the supplied Forcheck library with the MPI module containing MPI constants and 
+MPI-2 procedure interfaces you can avoid these messages.
+
+2. Prerequisites
+- You need Forcheck 14.0.03 or later and MPI.flb
+
+3. Usage
+- Reference the MPI module in each program unit which references MPI procedures and rises
+Forcheck errors:
+  USE MPI
+- Include the library MPI.flb in the analysis.
+
+4. Analysing mpi.f90
+When you do not use the supplied library file MPI.flb but analyse mpi.f90, you need to
+enable Fortran extensions 69 and 273 in the configuration file. This enables the [PLURI] Forcheck
+attribute and the CLASS type.
+
