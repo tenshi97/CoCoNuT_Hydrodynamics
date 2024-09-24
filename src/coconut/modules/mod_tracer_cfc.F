@@ -35,20 +35,23 @@ c     ============================================================
 c     ============================================================
       USE mo_mpi
       USE precision
+      USE size_cfc on
       IMPLICIT NONE
       
       integer :: istat
       integer(kind=ik) :: i
-      character*64 :: dfilename,procstr,outfilename
+      character*64 :: dfilename,procstr,outfilename,mpifilename
+      character*64 :: suffix
+      suffix = '.dat'
       WRITE(unit=procstr,fmt='(i4)') myproc
       procstr = trim(adjustl(procstr))
-      dfilename = 'debugmpi/debug'//procstr
-      dfilename = dfilename//'.dat'
-      outfilename = 'debugmpi/file'//procstr
-      
+      outfilename = 'debugmpi/file'//procstr // suffix
+      dfilename = 'debugmpi/debug'// procstr // suffix
+      mpifilename = 'debugmpi/mpi' // procstr // suffix
 c      WRITE(unit=dfilename,fmt="('debugmpi/file',i,'.dat')") myproc
       OPEN(UNIT=7777,FILE=outfilename)
       OPEN(UNIT=8888,FILE=dfilename)
+      open(UNIT=9999,FILE=mpifilename)
       tracer_num = 20
       allocate(
      &  pos_tracer_r(tracer_num),

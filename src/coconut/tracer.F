@@ -197,20 +197,17 @@ c     ==================================================================
       USE metric_cfc
       USE tracer_cfc
       USE size_cfc, ONLY: m, n, o, n_s, n_e, o_s, o_e, n_loc, o_loc
-
+      USE gfloat_hy, ONLY: time
       IMPLICIT NONE
       
       integer (KIND=ik) :: i,ir,it
       real (KIND=rk) :: v_1_t,v_2_t,temp_t      
       integer (KIND=ik), INTENT(IN) :: rkint_order
       real(KIND=rk), INTENT(IN) :: alpha_rk,beta_rk,delta_t
-      integer :: inghz
+      WRITE(9999,*) "INTEGRATION START at time:",time
       LOOP_INT:DO i=1,tracer_num
-            call tci_search(i)
-            call tci_t_search(i)
             ir = tracer_ci_r(i)
             it = tracer_ci_theta(i)
-            inghz = 0
             IF((ir.lt.0).or.(ir.gt.m))   THEN
                   CYCLE LOOP_INT
             END IF
@@ -223,28 +220,14 @@ c     ==================================================================
      &      .false.,"v_2")
 
             IF((it.lt.n_s))      THEN
-               inghz = 1
                it = n_s
             ELSE IF(it.gt.n_e)   THEN
-               inghz = 2
                it = n_e
             END IF
             v_1_t = g_up_11(ir,it,1)*v_1_t - 
      &      beta_up_1(ir,it,1)/alpha(ir,it,1)
             v_2_t = g_up_22(ir,it,1)*v_2_t-
      &      beta_up_2(ir,it,1)/alpha(ir,it,1)
-            if(inghz.gt.0) then
-               if(inghz.eq.1) then
-                  if(v_2_t.lt.0) then
-                     v_2_t = -v_2_t
-                  end if
-               end if
-               if(inghz.eq.2) then
-                  if(v_2_t.gt.0) then
-                     v_2_t = -v_2_t
-                  end if  
-               end if
-            end if
             IF(rkint_order.eq.1)    THEN
                   pos_tracer_r_old(i) = pos_tracer_r(i)
                   pos_tracer_r(i) = pos_tracer_r_old(i) + 
@@ -266,84 +249,11 @@ c     ==================================================================
      &            + 2*(pos_tracer_theta(i) + v_2_t * delta_t))/
      &            3.0_rk
             END IF
-
-
-            call parameter_interp2
-            call tracer_print
+            call tci_search(i)
+            call tci_t_search(i)
       END DO LOOP_INT
-
+      WRITE(9999,*) "INTEGRATION FINISHED"
       END SUBROUTINE
-
-
-
-c     ==================================================================
-
-      FUNCTION vel1_interp(tracer_index)
-
-c     ==================================================================
-      
-      USE precision
-      USE grid_cfc
-      USE hydro_primitives_cfc
-      USE tracer_cfc
-
-      IMPLICIT NONE
-      INTEGER (KIND=ik), INTENT(IN)  :: tracer_index
-      REAL (KIND=rk) vel1_interp,pos_r,pos_theta
-      INTEGER (KIND=ik) :: tci,tci_t
-      tci = tracer_ci_r(tracer_index)
-      tci_t = tracer_ci_theta(tracer_index)
-      pos_r = pos_tracer_r(tracer_index)
-      pos_theta = pos_tracer_theta(tracer_index)
-      IF (tci.eq.-1) THEN
-            vel1_interp = 0.0_rk
-            RETURN
-      END IF
-c     should we check tci_t >n_s-3?(will the particle move so fast to move out of the ghost zone)
-      vel1_interp = v_1(tci,tci_t,1)+(v_1(tci,tci_t,1)-
-     &              v_1(tci-1,tci_t,1))*(pos_r-
-     &              r_if(tci))/delta_r(tci)
-      END FUNCTION vel1_interp
-
-
-
-c     ==================================================================
-
-      FUNCTION vel2_interp(tracer_index)
-
-c     ==================================================================
-            
-      USE precision
-      USE grid_cfc
-      USE hydro_primitives_cfc
-      USE tracer_cfc
-      
-      IMPLICIT NONE
-      INTEGER (KIND=ik), INTENT(IN)  :: tracer_index
-      REAL (KIND=rk) vel2_interp,pos_r,pos_theta
-      INTEGER (KIND=ik) :: tci,tci_t
-      tci = tracer_ci_r(tracer_index)
-      tci_t = tracer_ci_theta(tracer_index)
-      pos_r = pos_tracer_r(tracer_index)
-      pos_theta = pos_tracer_theta(tracer_index)
-      IF (tci.eq.-1) THEN
-            vel2_interp = 0.0_rk
-            RETURN
-      END IF
-      IF (tci_t.lt.n_s) THEN
-            vel2_interp = -v_2(tci,n_s,1)
-            RETURN
-      END IF 
-      IF (tci_t.gt.n_e) THEN
-            vel2_interp = -v_2(tci,n_e,1)
-            RETURN
-      END IF 
-
-      vel2_interp = v_2(tci,tci_t,1)+(v_2(tci,tci_t,1)-
-     &              v_2(tci,tci_t-1,1))*(pos_theta-
-     &              theta_if(tci_t))/delta_theta
-      END FUNCTION vel2_interp
-      
 
 c     ==================================================================
 
@@ -434,10 +344,12 @@ c     But in further study we may use more accurate interpolation methods like C
       INTEGER (KIND=ik) :: ir,it,i,j
       REAL (KIND=rk) :: dr_t,dth_t,sr
       LOGICAL :: inghz
+c      WRITE(9999,*) "TEST12"
       LOOP_INTERP:DO i=1, tracer_num
             inghz = .false.
             ir = tracer_ci_r(i)
             it = tracer_ci_theta(i)
+c            WRITE(9999,*) "TEST13",i,ir,it
             IF ((ir.lt.0).or.(ir.gt.m)) THEN
                   CYCLE LOOP_INTERP
             END IF
@@ -451,6 +363,7 @@ c     But in further study we may use more accurate interpolation methods like C
                inghz = .true.
                it = n_e
             END IF
+c            WRITE(9999,*) "TEST14"
 c            WRITE(8888,*) "----debug for v_1-----"
             v_1_tracer(i) = bilineary_interpolation
      &      (v_1(-1:m+1,n_s-1:n_e+1,1),-1,m+1,n_s-1,n_e+1,1,1,i
@@ -493,6 +406,7 @@ c            WRITE(8888,*) "----debug for entropy----"
             entropy_tracer(i) = 
      &      bilineary_interpolation(entropy(-1:m+1,n_s-1:n_e+1,1),-1,
      &      m+1,n_s-1,n_e+1,1,1,i,.false.,"entropy")
+c           WRITE(9999,*) "TEST15"
       END DO LOOP_INTERP
 
       END SUBROUTINE parameter_interp2
@@ -514,6 +428,7 @@ c     ==================================================================
             return
       END IF
       tracer_printtime = time
+c      WRITE(9999,*) "TEST16"
       LOOP_PRINT: DO i=1,tracer_num
             tci_r = tracer_ci_r(i)
             tci_t = tracer_ci_theta(i)
@@ -527,8 +442,8 @@ c     ==================================================================
             WRITE(7777,*) 's = ',entropy_tracer(i)
             WRITE(7777,*) 'den = ',den_tracer(i) 
       END DO LOOP_PRINT
+c      WRITE(9999,*) "TEST17"
       END SUBROUTINE tracer_print
-
 c     ==================================================================
       FUNCTION bilineary_interpolation(arr,l1,u1,l2,u2,l3,u3,ti,negc
      & ,dbg) result(val)
@@ -589,7 +504,7 @@ c     ==================================================================
             END IF
       END IF
       IF(nan_check(ti)) THEN
-            IF(isnan(val)) THEN
+            IF(isnan(val)) THEN  
       nan_check(ti) = .false.
       WRITE(8888,*) dbg
       WRITE(8888,*) "basic parameters:",ti
@@ -622,12 +537,12 @@ c     ==================================================================
       USE tracer_cfc
       USE gfloat_hy, ONLY: time
       USE mo_mpi
+      use phycon, only : pc_pi
       INTEGER :: istat
       INTEGER(kind=ik) :: nsend_l,nsend_r,nrecv_l,nrecv_r,tracer_num_new
-      INTEGER(kind=ik) :: tracer_new_num
       INTEGER(kind=ik) :: nsl,nsr,nns,ndebug
       INTEGER(kind=ik) :: i,j,k
-      LOGICAL :: issent
+      LOGICAL :: issent,numchanged
       REAL(kind=rk), allocatable :: sbuffer_tl(:,:)
       REAL(kind=rk), allocatable :: rbuffer_tl(:,:)
       REAL(kind=rk), allocatable :: sbuffer_tr(:,:)
@@ -643,82 +558,112 @@ c     ==================================================================
       integer (kind=ik), parameter :: tag_zsndr=9703_ik
       nsend_l = 0
       nsend_r = 0
+      numchanged = .false.
       do i=1,tracer_num
-            if(pos_tracer_theta(i).lt.tracer_if(n_s-1)) then
+            if(pos_tracer_theta(i).lt.theta_if(n_s-1)) then
                   nsend_l = nsend_l + 1
+                  WRITE(9999,*) "TRACER TO BE SENT TO LEFT:"
+                  WRITE(9999,*) "TRACER ID:",tracer_id(i)
+                  WRITE(9999,*) "POS_THETA:",pos_tracer_theta(i)
             end if
-            if(pos_tracer_theta(i).gt.tracer_if(n_e)) then
+            if(pos_tracer_theta(i).gt.theta_if(n_e)) then
                   nsend_r = nsend_r + 1
+                  WRITE(9999,*) "TRACER TO BE SENT TO RIGHT:"
+                  WRITE(9999,*) "TRACER ID:",tracer_id(i)
+                  WRITE(9999,*) "POS_THETA:",pos_tracer_theta(i)
             end if
       end do
-      allocate(sbuffer_tl(1:nsend_l,1:4),sbuffer_tr(1:nsend_r,1:4)
+      WRITE(9999,*) "NSEND_L:",nsend_l,"NSEND_R:",nsend_r
+      allocate(sbuffer_tl(1:nsend_l,1:4),sbuffer_tr(1:nsend_r,1:4),
      &  stat=istat)
+      WRITE(9999,*) "COUNTING SEND FINISHED"
       nsl=0
       nsr=0
       do i = 1,tracer_num
-        if(pos_tracer_theta(i).lt.tracer_if(n_s-1)) then
-            nsl+=1
+        if(pos_tracer_theta(i).ge.theta_if(0)) then
+          if(pos_tracer_theta(i).lt.theta_if(n_s-1)) then
+            nsl = nsl+1
             sbuffer_tl(nsl,1) = tracer_id(i)
             sbuffer_tl(nsl,2) = pos_tracer_r(i)
             sbuffer_tl(nsl,3) = pos_tracer_theta(i)
             sbuffer_tl(nsl,4) = tracer_ci_r(i)
+          end if
+        else
+          pos_tracer_theta(i) = - pos_tracer_theta(i)
         end if
-        if(pos_tracer_theta(i).gt.tracer_if(n_e)) then
-            nsr+=1
+        if(pos_tracer_theta(i).ge.theta_if(0)) then
+          if(pos_tracer_theta(i).gt.theta_if(n_e)) then
+            nsr = nsr + 1
             sbuffer_tr(nsr,1) = tracer_id(i)
-            sbuffer_tr(nsr,2) = pos_tracer(i)
+            sbuffer_tr(nsr,2) = pos_tracer_r(i)
             sbuffer_tr(nsr,3) = pos_tracer_theta(i)
             sbuffer_tr(nsr,4) = tracer_ci_r(i)
+          end if
+        else
+            pos_tracer_theta(i) = 2.0_rk * pc_pi - pos_tracer_theta(i)
         end if
       end do
-
+      WRITE(9999,*) "SBUFFER FINISHED"
       call MPI_Cart_shift(cart_comm,0,-1,src,dest,ierr)
       call MPI_Sendrecv (nsend_l,1,
-     &  MPI_INTEGER,dest,tag_ysndl,nrecv_l,
+     &  MPI_INTEGER,dest,tag_ysndl,nrecv_r,
      &  1,MPI_INTEGER,
      &  src,tag_ysndl,cart_comm,mpistat,ierr)
-
+        if(src.eq.MPI_PROC_NULL) then
+          nrecv_r = 0
+        end if
 
       call MPI_Cart_shift(cart_comm,0,1,src,dest,ierr)
       call MPI_Sendrecv (nsend_r,1,
-     &  MPI_INTEGER,dest,tag_ysndr,nrecv_r,
+     &  MPI_INTEGER,dest,tag_ysndr,nrecv_l,
      &  1,MPI_INTEGER,
      &  src,tag_ysndr,cart_comm,mpistat,ierr)
 
-
+        if(src.eq.MPI_PROC_NULL) then
+          nrecv_l = 0
+        end if
+      WRITE(9999,*) "NUMBER COMMUNICATION FINISHED"
         tracer_num_new = tracer_num + (nrecv_l+nrecv_r) 
      &  - (nsend_l+nsend_r)
 
-
+      IF(nsend_l/=0.or.nsend_r/=0.or.nrecv_l/=0.or.nrecv_r/=0) THEN
+            numchanged = .true.
+            WRITE(9999,*) "NSEND_L:",nsend_l,"NSEND_R:",nsend_r
+            WRITE(9999,*) "NRECV_L:",nrecv_l,"NRECV_R:",nrecv_r
+            WRITE(9999,*) "TRACER_NUM_NEW:",tracer_num_new
+            WRITE(9999,*) "TRACER_NUM",tracer_num
+      END IF
+c      WRITE(9999,*) "TEST4"
       allocate(buffer_tnew(1:tracer_num_new,1:4),
      &  stat=istat)
-
+c     WRITE(9999,*) "TEST5"
       nns = 0
       ndebug = 0
-      do i = 1,tracer_num  
+      LOOP_Main:do i = 1,tracer_num  
         issent = .false.
         LOOP_FINDL:do j=1,nsend_l 
             if(tracer_id(i).eq.sbuffer_tl(j,1)) then
                 issent = .true.
                 EXIT LOOP_FINDL
             end if
-        end do
+        end do LOOP_FINDL
         LOOP_FINDR: do j=1,nsend_r
             if(tracer_id(i).eq.sbuffer_tr(j,1)) then
                 issent = .true.
                 EXIT LOOP_FINDR
             end if
-        end do
+        end do LOOP_FINDR
         if(.not.issent) then
-            nns += 1
+            nns = nns+1
             buffer_tnew(nns,1) = tracer_id(i)
             buffer_tnew(nns,2) = pos_tracer_r(i)
             buffer_tnew(nns,3) = pos_tracer_theta(i)
             buffer_tnew(nns,4) = tracer_ci_r(i)
         end if
-      end do
+      end do LOOP_Main
+
       if(nns /= (tracer_num-(nsend_l+nsend_r))) then
-        WRITE(8888,*) "ERROR: NUMBER OF TRACERS NOT SENT IS NOT AS 
+        WRITE(9999,*) "ERROR: NUMBER OF TRACERS NOT SENT IS NOT AS 
      &  EXPECTED",nns,tracer_num-(nsend_l+nsend_r),time
       end if
 
@@ -727,25 +672,25 @@ c     ==================================================================
 
       call MPI_Cart_shift(cart_comm,0,-1,src,dest,ierr)
       call MPI_Sendrecv (sbuffer_tl,nsend_l*4,
-     &  MPI_DOUBLE_PRECISION,dest,tag_ysndl,rbuffer_tl,
-     &  nrecv_l*4,MPI_DOUBLE_PRECISION,
+     &  MPI_DOUBLE_PRECISION,dest,tag_ysndl,rbuffer_tr,
+     &  nrecv_r*4,MPI_DOUBLE_PRECISION,
      &  src,tag_ysndl,cart_comm,mpistat,ierr)
 
       call MPI_Cart_shift(cart_comm,0,1,src,dest,ierr)
       call MPI_Sendrecv (sbuffer_tr,nsend_r*4,
-     &  MPI_DOUBLE_PRECISION,dest,tag_ysndr,rbuffer_tr,
-     &  nrecv_r*4,MPI_DOUBLE_PRECISION,
+     &  MPI_DOUBLE_PRECISION,dest,tag_ysndr,rbuffer_tl,
+     &  nrecv_l*4,MPI_DOUBLE_PRECISION,
      &  src,tag_ysndr,cart_comm,mpistat,ierr)
 
+      WRITE(9999,*) "BUFFER COMMUNICATION FINISHED"
 
-      
       if((nns + nrecv_l +nrecv_r)/=tracer_num_new) then
-        WRITE(8888,*) "ERROR: NUMBER OF TRACERS RECEIVED IS NOT AS 
+        WRITE(9999,*) "ERROR: NUMBER OF TRACERS RECEIVED IS NOT AS 
      &  EXPECTED",nns,nrecv_l,nrecv_r,tracer_num_new,time
       end if
 
       buffer_tnew(nns+1:nns+nrecv_l,:) = rbuffer_tl(:,:)
-      nns += nrecv_l
+      nns = nns+  nrecv_l
       buffer_tnew(nns+1:tracer_num_new,:) = rbuffer_tr(:,:)
 
       deallocate(tracer_id,pos_tracer_r,pos_tracer_theta,tracer_ci_r)
@@ -754,10 +699,21 @@ c     ==================================================================
      &  tracer_id(tracer_num_new),
      &  pos_tracer_r(tracer_num_new),
      &  pos_tracer_theta(tracer_num_new),
-     &  tracer_ci_r(tracer_new_num))
-      
-      tracer_num = tracer_new_num
-      
+     &  tracer_ci_r(tracer_num_new))
+
+      tracer_id = buffer_tnew(:,1)
+      pos_tracer_r = buffer_tnew(:,2)
+      pos_tracer_theta = buffer_tnew(:,3)
+      tracer_ci_r = buffer_tnew(:,4)
+      WRITE(9999,*) "New Tracers NUM:",tracer_num_new
+      do i=1,tracer_num_new
+            WRITE(9999,*) i
+            WRITE(9999,*) tracer_id(i)
+            WRITE(9999,*) pos_tracer_r(i)
+            WRITE(9999,*) pos_tracer_theta(i)
+            WRITE(9999,*) tracer_ci_r(i)
+      end do
+      tracer_num = tracer_num_new
       END SUBROUTINE MPI_TRACER
 c  ********************************************************************
       END MODULE tracer

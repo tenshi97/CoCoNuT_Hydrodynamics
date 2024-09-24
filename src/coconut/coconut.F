@@ -539,6 +539,10 @@ ccc   start Runge-Kutta step -------------------------------------------
          endif
 c        TRACER MODIFICATION
          call tracer_integral(rk_index,alpha_rk,beta_rk,delta_t)
+         call MPI_TRACER
+         call parameter_interp2
+         call tracer_print
+
          call rescale_velocities (1)
 
 #ifdef MPI_HYDRO
