@@ -176,7 +176,7 @@ c     ==================================================================
                   pos_tracer_r(i) = 1.5_rk**(i)*1e6;
                   pos_tracer_theta(i) = theta(t_c)
                   t_c = t_c + 1
-                  if(t_c.ge.n_e) then
+                  if(t_c.gt.n_e) then
                         t_c = n_s
                   end if
                  call tci_search(i)
