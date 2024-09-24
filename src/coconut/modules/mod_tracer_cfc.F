@@ -34,9 +34,11 @@ c     ============================================================
         
 c     ============================================================
       USE mo_mpi
+      USE precision
       IMPLICIT NONE
       
       integer :: istat
+      integer(kind=ik) :: i
       character*64 :: dfilename,procstr,outfilename
       WRITE(unit=procstr,fmt='(i4)') myproc
       procstr = trim(adjustl(procstr))
@@ -64,7 +66,7 @@ c      WRITE(unit=dfilename,fmt="('debugmpi/file',i,'.dat')") myproc
      &  tracer_ci_theta(tracer_num),
      &  nan_check(tracer_num),
      &  neg_check(tracer_num),
-     &  tracer_id(tracer_num)
+     &  tracer_id(tracer_num),
      &  stat=istat)
       tracer_ci_r = -2_ik
       tracer_ci_theta =-2_ik

@@ -623,7 +623,8 @@ c     ==================================================================
       USE gfloat_hy, ONLY: time
       USE mo_mpi
       INTEGER :: istat
-      INTEGER(kind=ik) :: nsend_l,nsend_r,nrecv_l,nrecv_r
+      INTEGER(kind=ik) :: nsend_l,nsend_r,nrecv_l,nrecv_r,tracer_num_new
+      INTEGER(kind=ik) :: tracer_new_num
       INTEGER(kind=ik) :: nsl,nsr,nns,ndebug
       INTEGER(kind=ik) :: i,j,k
       LOGICAL :: issent
@@ -632,7 +633,7 @@ c     ==================================================================
       REAL(kind=rk), allocatable :: sbuffer_tr(:,:)
       REAL(kind=rk), allocatable :: rbuffer_tr(:,:)
       
-      REAL(kind=rak), allocatable :: buffer_tnew(:,:)
+      REAL(kind=rk), allocatable :: buffer_tnew(:,:)
 
       INTEGER (kind=ik) :: src, dest, ierr, mpistat (MPI_STATUS_SIZE)
       
@@ -644,10 +645,10 @@ c     ==================================================================
       nsend_r = 0
       do i=1,tracer_num
             if(pos_tracer_theta(i).lt.tracer_if(n_s-1)) then
-                  nsend_l += 1
+                  nsend_l = nsend_l + 1
             end if
             if(pos_tracer_theta(i).gt.tracer_if(n_e)) then
-                  nsend_r += 1
+                  nsend_r = nsend_r + 1
             end if
       end do
       allocate(sbuffer_tl(1:nsend_l,1:4),sbuffer_tr(1:nsend_r,1:4)
@@ -689,12 +690,12 @@ c     ==================================================================
      &  - (nsend_l+nsend_r)
 
 
-      allocate(buffer_tnew(1:tracer_num_new,1:4)
+      allocate(buffer_tnew(1:tracer_num_new,1:4),
      &  stat=istat)
 
       nns = 0
       ndebug = 0
-      do i=1,tracer_num  
+      do i = 1,tracer_num  
         issent = .false.
         LOOP_FINDL:do j=1,nsend_l 
             if(tracer_id(i).eq.sbuffer_tl(j,1)) then
@@ -718,7 +719,7 @@ c     ==================================================================
       end do
       if(nns /= (tracer_num-(nsend_l+nsend_r))) then
         WRITE(8888,*) "ERROR: NUMBER OF TRACERS NOT SENT IS NOT AS 
-        EXPECTED",nns,tracer_num-(nsend_l+nsend_r),time
+     &  EXPECTED",nns,tracer_num-(nsend_l+nsend_r),time
       end if
 
       allocate(rbuffer_tl(1:nrecv_l,1:4),
@@ -740,7 +741,7 @@ c     ==================================================================
       
       if((nns + nrecv_l +nrecv_r)/=tracer_num_new) then
         WRITE(8888,*) "ERROR: NUMBER OF TRACERS RECEIVED IS NOT AS 
-        EXPECTED",nns,nrecv_l,nrecv_r,tracer_num_new,time
+     &  EXPECTED",nns,nrecv_l,nrecv_r,tracer_num_new,time
       end if
 
       buffer_tnew(nns+1:nns+nrecv_l,:) = rbuffer_tl(:,:)
