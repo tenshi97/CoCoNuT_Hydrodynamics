@@ -1112,7 +1112,6 @@ ccc   recover the primitive (physical) variables rho, v^i, W, epsilon
          call recover_primitives
 
       end do
-      do 
       call MPI_TRACER
       call parameter_interp2
       call tracer_print

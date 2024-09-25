@@ -36,7 +36,7 @@ c     ============================================================
 c     ============================================================
       USE mo_mpi
       USE precision
-      USE size_cfc on
+      USE size_cfc
       IMPLICIT NONE
       
       integer :: istat
