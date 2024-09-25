@@ -364,7 +364,6 @@ c     TRACER NEW MODIFICATION
 #endif
 
       integer i, j, k, jk, l, i_n, ierr,r_tracer_index
-      integer tl_i
 
       delta_t = dt_act * c_light
 
