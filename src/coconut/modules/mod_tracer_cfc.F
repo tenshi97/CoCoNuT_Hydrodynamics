@@ -27,6 +27,7 @@ c     ============================================================
       LOGICAL, allocatable :: neg_check(:)
       LOGICAL, allocatable :: nan_check(:)
       integer (kind=ik), allocatable :: tracer_id(:)
+      integer (kind=ik), allocatable ::tracer_proc(:)
       CONTAINS
 c     ============================================================
 
@@ -45,9 +46,9 @@ c     ============================================================
       suffix = '.dat'
       WRITE(unit=procstr,fmt='(i4)') myproc
       procstr = trim(adjustl(procstr))
-      outfilename = 'debugmpi/file'//procstr // suffix
-      dfilename = 'debugmpi/debug'// procstr // suffix
-      mpifilename = 'debugmpi/mpi' // procstr // suffix
+      outfilename = 'debugmpi/filen'//procstr // suffix
+      dfilename = 'debugmpi/debugn'// procstr // suffix
+      mpifilename = 'debugmpi/mpin' // procstr // suffix
 c      WRITE(unit=dfilename,fmt="('debugmpi/file',i,'.dat')") myproc
       OPEN(UNIT=7777,FILE=outfilename)
       OPEN(UNIT=8888,FILE=dfilename)
@@ -70,6 +71,7 @@ c      WRITE(unit=dfilename,fmt="('debugmpi/file',i,'.dat')") myproc
      &  nan_check(tracer_num),
      &  neg_check(tracer_num),
      &  tracer_id(tracer_num),
+     &  tracer_proc(tracer_num),
      &  stat=istat)
       tracer_ci_r = -2_ik
       tracer_ci_theta =-2_ik

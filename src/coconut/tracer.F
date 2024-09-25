@@ -161,6 +161,7 @@ c     ==================================================================
       USE metric_cfc
       USE tracer_cfc
       USE size_cfc, ONLY: m, n, o, n_s, n_e, o_s, o_e, n_loc, o_loc
+      USE mo_mpi
       IMPLICIT NONE
       integer (KIND=ik) :: i,t_c
       t_c = n_s
@@ -175,6 +176,7 @@ c     ==================================================================
       init_loop: do i=1,tracer_num
                   pos_tracer_r(i) = 1.5_rk**(i)*1e6;
                   pos_tracer_theta(i) = theta(t_c)
+                  tracer_proc(i) = myproc
                   t_c = t_c + 1
                   if(t_c.gt.n_e) then
                         t_c = n_s
@@ -574,7 +576,7 @@ c     ==================================================================
             end if
       end do
       WRITE(9999,*) "NSEND_L:",nsend_l,"NSEND_R:",nsend_r
-      allocate(sbuffer_tl(1:nsend_l,1:4),sbuffer_tr(1:nsend_r,1:4),
+      allocate(sbuffer_tl(1:nsend_l,1:5),sbuffer_tr(1:nsend_r,1:5),
      &  stat=istat)
       WRITE(9999,*) "COUNTING SEND FINISHED"
       nsl=0
@@ -587,6 +589,7 @@ c     ==================================================================
             sbuffer_tl(nsl,2) = pos_tracer_r(i)
             sbuffer_tl(nsl,3) = pos_tracer_theta(i)
             sbuffer_tl(nsl,4) = tracer_ci_r(i)
+            sbuffer_tl(nsl,5) = tracer_proc(i)
           end if
         else
           pos_tracer_theta(i) = - pos_tracer_theta(i)
@@ -598,6 +601,7 @@ c     ==================================================================
             sbuffer_tr(nsr,2) = pos_tracer_r(i)
             sbuffer_tr(nsr,3) = pos_tracer_theta(i)
             sbuffer_tr(nsr,4) = tracer_ci_r(i)
+            sbuffer_tr(nsr,5) = tracer_proc(i)
           end if
         else
             pos_tracer_theta(i) = 2.0_rk * pc_pi - pos_tracer_theta(i)
@@ -634,7 +638,7 @@ c     ==================================================================
             WRITE(9999,*) "TRACER_NUM",tracer_num
       END IF
 c      WRITE(9999,*) "TEST4"
-      allocate(buffer_tnew(1:tracer_num_new,1:4),
+      allocate(buffer_tnew(1:tracer_num_new,1:5),
      &  stat=istat)
 c     WRITE(9999,*) "TEST5"
       nns = 0
@@ -659,6 +663,7 @@ c     WRITE(9999,*) "TEST5"
             buffer_tnew(nns,2) = pos_tracer_r(i)
             buffer_tnew(nns,3) = pos_tracer_theta(i)
             buffer_tnew(nns,4) = tracer_ci_r(i)
+            buffer_tnew(nns,5) = tracer_proc(i)
         end if
       end do LOOP_Main
 
@@ -667,8 +672,8 @@ c     WRITE(9999,*) "TEST5"
      &  EXPECTED",nns,tracer_num-(nsend_l+nsend_r),time
       end if
 
-      allocate(rbuffer_tl(1:nrecv_l,1:4),
-     &  rbuffer_tr(1:nrecv_r,1:4),stat=istat)
+      allocate(rbuffer_tl(1:nrecv_l,1:5),
+     &  rbuffer_tr(1:nrecv_r,1:5),stat=istat)
 
       call MPI_Cart_shift(cart_comm,0,-1,src,dest,ierr)
       call MPI_Sendrecv (sbuffer_tl,nsend_l*4,
@@ -705,6 +710,7 @@ c     WRITE(9999,*) "TEST5"
       pos_tracer_r = buffer_tnew(:,2)
       pos_tracer_theta = buffer_tnew(:,3)
       tracer_ci_r = buffer_tnew(:,4)
+      tracer_proc = buffer_tnew(:,5)
       WRITE(9999,*) "New Tracers NUM:",tracer_num_new
       do i=1,tracer_num_new
             WRITE(9999,*) i
@@ -712,6 +718,7 @@ c     WRITE(9999,*) "TEST5"
             WRITE(9999,*) pos_tracer_r(i)
             WRITE(9999,*) pos_tracer_theta(i)
             WRITE(9999,*) tracer_ci_r(i)
+            WRITE(9999,*) "FROM PROC:",tracer_proc(i)
       end do
       tracer_num = tracer_num_new
       END SUBROUTINE MPI_TRACER
