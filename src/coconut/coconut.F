@@ -364,6 +364,7 @@ c     TRACER NEW MODIFICATION
 #endif
 
       integer i, j, k, jk, l, i_n, ierr,r_tracer_index
+      integer tl_i
 
       delta_t = dt_act * c_light
 
@@ -539,9 +540,6 @@ ccc   start Runge-Kutta step -------------------------------------------
          endif
 c        TRACER MODIFICATION
          call tracer_integral(rk_index,alpha_rk,beta_rk,delta_t)
-         call MPI_TRACER
-         call parameter_interp2
-         call tracer_print
 
          call rescale_velocities (1)
 
@@ -1114,7 +1112,12 @@ c     update energy density after the update of the grav. potential
 ccc   recover the primitive (physical) variables rho, v^i, W, epsilon
          call recover_primitives
 
-      enddo
+      end do
+      do 
+      call MPI_TRACER
+      call parameter_interp2
+      call tracer_print
+
 ccc   end of Runge-Kutta loop
 
 #if defined(OPENMP_CFC) && (defined(OPEN_MP_2D) || defined(OPEN_MP_3D))
