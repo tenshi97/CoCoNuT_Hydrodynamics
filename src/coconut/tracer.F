@@ -199,6 +199,7 @@ c     ==================================================================
       USE metric_cfc
       USE tracer_cfc
       USE size_cfc, ONLY: m, n, o, n_s, n_e, o_s, o_e, n_loc, o_loc
+      USE mo_mpi
       USE gfloat_hy, ONLY: time
       IMPLICIT NONE
       
@@ -208,6 +209,8 @@ c     ==================================================================
       real(KIND=rk), INTENT(IN) :: alpha_rk,beta_rk,delta_t
       WRITE(9999,*) "INTEGRATION START at time:",time
       LOOP_INT:DO i=1,tracer_num
+            call tci_search(i)
+            call tci_t_search(i)
             ir = tracer_ci_r(i)
             it = tracer_ci_theta(i)
             IF((ir.lt.0).or.(ir.gt.m))   THEN
@@ -220,16 +223,35 @@ c     ==================================================================
             v_2_t = bilineary_interpolation
      &      (v_2(-1:m+1,n_s-1:n_e+1,1),-1,m+1,n_s-1,n_e+1,1,1,i,
      &      .false.,"v_2")
-
             IF((it.lt.n_s))      THEN
                it = n_s
             ELSE IF(it.gt.n_e)   THEN
                it = n_e
             END IF
+
             v_1_t = g_up_11(ir,it,1)*v_1_t - 
      &      beta_up_1(ir,it,1)/alpha(ir,it,1)
             v_2_t = g_up_22(ir,it,1)*v_2_t-
      &      beta_up_2(ir,it,1)/alpha(ir,it,1)
+            IF(tracer_proc(i)/=myproc) THEN
+                  WRITE(8888,*) "-----------------------"
+                  WRITE(8888,*) "DEBUG FOR INTEGRATION"
+                  WRITE(8888,*) "TIME=",time
+                  WRITE(8888,*) "Local ID=",i
+                  WRITE(8888,*) "V_1=",v_1_t
+                  WRITE(8888,*) "V_2=",v_2_t
+                  WRITE(8888,*) "Global ID=",tracer_id(i)
+                  WRITE(8888,*) "TRACER_PROC =",tracer_proc(i)
+                  WRITE(8888,*) "r=",pos_tracer_r(i),tracer_ci_r(i)
+                  WRITE(8888,*) "th=",pos_tracer_theta(i),
+     &            tracer_ci_theta(i)
+                  WRITE(8888,*) "INTERP VALUE FOR THE TRACER V1:"
+                  WRITE(8888,*) v_1(ir-1,it-1,1),v_1(ir-1,it,1)
+     &             ,v_1(ir,it-1,1),v_1(ir,it,1) 
+                  WRITE(8888,*) "INTERP VALUE FOR THE TRACER V2:"
+                  WRITE(8888,*) v_2(ir-1,it-1,1),v_2(ir-1,it,1)
+     &             ,v_2(ir,it-1,1),v_2(ir,it,1) 
+            END IF
             IF(rkint_order.eq.1)    THEN
                   pos_tracer_r_old(i) = pos_tracer_r(i)
                   pos_tracer_r(i) = pos_tracer_r_old(i) + 
@@ -251,8 +273,6 @@ c     ==================================================================
      &            + 2*(pos_tracer_theta(i) + v_2_t * delta_t))/
      &            3.0_rk
             END IF
-            call tci_search(i)
-            call tci_t_search(i)
       END DO LOOP_INT
       WRITE(9999,*) "INTEGRATION FINISHED"
       END SUBROUTINE
@@ -434,7 +454,10 @@ c      WRITE(9999,*) "TEST16"
       LOOP_PRINT: DO i=1,tracer_num
             tci_r = tracer_ci_r(i)
             tci_t = tracer_ci_theta(i)
+            WRITE(7777,*) "-----------------------"
             WRITE(7777,*) 'TRACER NO = ', i,'TIME = ', time
+            WRITE(7777,*) 'GLOBAL ID=',tracer_id(i)
+            WRITE(7777,*) 'IPROC = ', tracer_proc(i)
             WRITE(7777,*) 'position r = ',pos_tracer_r(i),tci_r
             WRITE(7777,*) 'position theta = ', pos_tracer_theta(i),tci_t
             WRITE(7777,*) 'v = ',v_1_tracer(i)
@@ -561,18 +584,27 @@ c     ==================================================================
       nsend_l = 0
       nsend_r = 0
       numchanged = .false.
+      WRITE(9999,*) "START MPI TRACER TIME = ",time
       do i=1,tracer_num
+            call tci_search(i)
+            call tci_t_search(i)
             if(pos_tracer_theta(i).lt.theta_if(n_s-1)) then
                   nsend_l = nsend_l + 1
+                  WRITE(9999,*) "-----------------------"
                   WRITE(9999,*) "TRACER TO BE SENT TO LEFT:"
                   WRITE(9999,*) "TRACER ID:",tracer_id(i)
+                  WRITE(9999,*) "POS_R:", pos_tracer_r(i)
                   WRITE(9999,*) "POS_THETA:",pos_tracer_theta(i)
+                  WRITE(9999,*) "TRACER_CI_R",tracer_ci_r(i)
             end if
             if(pos_tracer_theta(i).gt.theta_if(n_e)) then
                   nsend_r = nsend_r + 1
+                  WRITE(9999,*) "-----------------------"
                   WRITE(9999,*) "TRACER TO BE SENT TO RIGHT:"
                   WRITE(9999,*) "TRACER ID:",tracer_id(i)
+                  WRITE(9999,*) "POS_R:", pos_tracer_r(i)
                   WRITE(9999,*) "POS_THETA:",pos_tracer_theta(i)
+                  WRITE(9999,*) "TRACER_CI_R",tracer_ci_r(i)
             end if
       end do
       WRITE(9999,*) "NSEND_L:",nsend_l,"NSEND_R:",nsend_r
@@ -676,15 +708,15 @@ c     WRITE(9999,*) "TEST5"
      &  rbuffer_tr(1:nrecv_r,1:5),stat=istat)
 
       call MPI_Cart_shift(cart_comm,0,-1,src,dest,ierr)
-      call MPI_Sendrecv (sbuffer_tl,nsend_l*4,
+      call MPI_Sendrecv (sbuffer_tl,nsend_l*5,
      &  MPI_DOUBLE_PRECISION,dest,tag_ysndl,rbuffer_tr,
-     &  nrecv_r*4,MPI_DOUBLE_PRECISION,
+     &  nrecv_r*5,MPI_DOUBLE_PRECISION,
      &  src,tag_ysndl,cart_comm,mpistat,ierr)
 
       call MPI_Cart_shift(cart_comm,0,1,src,dest,ierr)
-      call MPI_Sendrecv (sbuffer_tr,nsend_r*4,
+      call MPI_Sendrecv (sbuffer_tr,nsend_r*5,
      &  MPI_DOUBLE_PRECISION,dest,tag_ysndr,rbuffer_tl,
-     &  nrecv_l*4,MPI_DOUBLE_PRECISION,
+     &  nrecv_l*5,MPI_DOUBLE_PRECISION,
      &  src,tag_ysndr,cart_comm,mpistat,ierr)
 
       WRITE(9999,*) "BUFFER COMMUNICATION FINISHED"
@@ -693,7 +725,26 @@ c     WRITE(9999,*) "TEST5"
         WRITE(9999,*) "ERROR: NUMBER OF TRACERS RECEIVED IS NOT AS 
      &  EXPECTED",nns,nrecv_l,nrecv_r,tracer_num_new,time
       end if
-
+      if(nrecv_l/=0) then
+            WRITE(9999,*) "WRITE RECEIVED FROM LEFT"
+            do i=1,nrecv_l
+                  WRITE(9999,*) rbuffer_tl(i,1)
+                  WRITE(9999,*) rbuffer_tl(i,2)
+                  WRITE(9999,*) rbuffer_tl(i,3)
+                  WRITE(9999,*) rbuffer_tl(i,4)
+                  WRITE(9999,*) rbuffer_tl(i,5)
+            end do
+      end if
+      if(nrecv_r/=0) then
+            WRITE(9999,*) "WRITE RECEIVED FROM RIGHT"
+            do i=1,nrecv_r
+                  WRITE(9999,*) rbuffer_tr(i,1)
+                  WRITE(9999,*) rbuffer_tr(i,2)
+                  WRITE(9999,*) rbuffer_tr(i,3)
+                  WRITE(9999,*) rbuffer_tr(i,4)
+                  WRITE(9999,*) rbuffer_tr(i,5)
+            end do
+      end if
       buffer_tnew(nns+1:nns+nrecv_l,:) = rbuffer_tl(:,:)
       nns = nns+  nrecv_l
       buffer_tnew(nns+1:tracer_num_new,:) = rbuffer_tr(:,:)
@@ -711,16 +762,19 @@ c     WRITE(9999,*) "TEST5"
       pos_tracer_theta = buffer_tnew(:,3)
       tracer_ci_r = buffer_tnew(:,4)
       tracer_proc = buffer_tnew(:,5)
+      tracer_num = tracer_num_new
       WRITE(9999,*) "New Tracers NUM:",tracer_num_new
+      deallocate(sbuffer_tl,sbuffer_tr,rbuffer_tl,
+     &  rbuffer_tr,buffer_tnew)
       do i=1,tracer_num_new
-            WRITE(9999,*) i
-            WRITE(9999,*) tracer_id(i)
-            WRITE(9999,*) pos_tracer_r(i)
-            WRITE(9999,*) pos_tracer_theta(i)
-            WRITE(9999,*) tracer_ci_r(i)
+            WRITE(9999,*) "-----------------------"
+            WRITE(9999,*) "local id:",i
+            WRITE(9999,*) "global_id",tracer_id(i)
+            WRITE(9999,*) "pos_r:",pos_tracer_r(i)
+            WRITE(9999,*) "pos_theta:",pos_tracer_theta(i)
+            WRITE(9999,*) "radial ci index:",tracer_ci_r(i)
             WRITE(9999,*) "FROM PROC:",tracer_proc(i)
       end do
-      tracer_num = tracer_num_new
       END SUBROUTINE MPI_TRACER
 c  ********************************************************************
       END MODULE tracer

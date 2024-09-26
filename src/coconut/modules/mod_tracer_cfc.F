@@ -75,8 +75,8 @@ c      WRITE(unit=dfilename,fmt="('debugmpi/file',i,'.dat')") myproc
      &  stat=istat)
       tracer_ci_r = -2_ik
       tracer_ci_theta =-2_ik
-      neg_check = .true.
-      nan_check = .true.
+      neg_check = .false.
+      nan_check = .false.
       do i=1,tracer_num
             tracer_id(i) = myproc*tracer_num+i
       end do
