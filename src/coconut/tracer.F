@@ -207,7 +207,7 @@ c     ==================================================================
       real (KIND=rk) :: v_1_t,v_2_t,temp_t      
       integer (KIND=ik), INTENT(IN) :: rkint_order
       real(KIND=rk), INTENT(IN) :: alpha_rk,beta_rk,delta_t
-      WRITE(9999,*) "INTEGRATION START at time:",time
+      WRITE(9999,*) "INTEGRATION START at time:",time," ",nstep
       LOOP_INT:DO i=1,tracer_num
             call tci_search(i)
             call tci_t_search(i)
@@ -443,6 +443,7 @@ c     ==================================================================
       USE metric_cfc
       USE tracer_cfc
       USE gfloat_hy, ONLY: time
+      use intgrs_hy, only : nstep
       IMPLICIT NONE
       
       integer (KIND=ik) :: i,tci_r,tci_t
@@ -450,12 +451,11 @@ c     ==================================================================
             return
       END IF
       tracer_printtime = time
-c      WRITE(9999,*) "TEST16"
       LOOP_PRINT: DO i=1,tracer_num
             tci_r = tracer_ci_r(i)
             tci_t = tracer_ci_theta(i)
             WRITE(7777,*) "-----------------------"
-            WRITE(7777,*) 'TRACER NO = ', i,'TIME = ', time
+            WRITE(7777,*) 'TRACER NO = ', i,'TIME = ', time," ",nstep
             WRITE(7777,*) 'GLOBAL ID=',tracer_id(i)
             WRITE(7777,*) 'IPROC = ', tracer_proc(i)
             WRITE(7777,*) 'position r = ',pos_tracer_r(i),tci_r
@@ -563,6 +563,7 @@ c     ==================================================================
       USE gfloat_hy, ONLY: time
       USE mo_mpi
       use phycon, only : pc_pi
+      use intgrs_hy, only : nstep
       INTEGER :: istat
       INTEGER(kind=ik) :: nsend_l,nsend_r,nrecv_l,nrecv_r,tracer_num_new
       INTEGER(kind=ik) :: nsl,nsr,nns,ndebug
@@ -584,7 +585,7 @@ c     ==================================================================
       nsend_l = 0
       nsend_r = 0
       numchanged = .false.
-      WRITE(9999,*) "START MPI TRACER TIME = ",time
+      WRITE(9999,*) "START MPI TRACER TIME = ",time," ",nstep
       do i=1,tracer_num
             call tci_search(i)
             call tci_t_search(i)
