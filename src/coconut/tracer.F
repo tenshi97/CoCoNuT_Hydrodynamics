@@ -201,6 +201,7 @@ c     ==================================================================
       USE size_cfc, ONLY: m, n, o, n_s, n_e, o_s, o_e, n_loc, o_loc
       USE mo_mpi
       USE gfloat_hy, ONLY: time
+      use intgrs_hy, only : nstep
       IMPLICIT NONE
       
       integer (KIND=ik) :: i,ir,it
@@ -460,12 +461,12 @@ c     ==================================================================
             WRITE(7777,*) 'IPROC = ', tracer_proc(i)
             WRITE(7777,*) 'position r = ',pos_tracer_r(i),tci_r
             WRITE(7777,*) 'position theta = ', pos_tracer_theta(i),tci_t
-            WRITE(7777,*) 'v = ',v_1_tracer(i)
-            WRITE(7777,*) 'v_theta = ', v_2_tracer(i)
-            WRITE(7777,*) 't = ',temp_tracer(i)
-            WRITE(7777,*) 'p = ',pressure_tracer(i)
-            WRITE(7777,*) 's = ',entropy_tracer(i)
-            WRITE(7777,*) 'den = ',den_tracer(i) 
+c            WRITE(7777,*) 'v = ',v_1_tracer(i)
+c            WRITE(7777,*) 'v_theta = ', v_2_tracer(i)
+c            WRITE(7777,*) 't = ',temp_tracer(i)
+c            WRITE(7777,*) 'p = ',pressure_tracer(i)
+c            WRITE(7777,*) 's = ',entropy_tracer(i)
+c            WRITE(7777,*) 'den = ',den_tracer(i) 
       END DO LOOP_PRINT
 c      WRITE(9999,*) "TEST17"
       END SUBROUTINE tracer_print
@@ -568,7 +569,10 @@ c     ==================================================================
       INTEGER(kind=ik) :: nsend_l,nsend_r,nrecv_l,nrecv_r,tracer_num_new
       INTEGER(kind=ik) :: nsl,nsr,nns,ndebug
       INTEGER(kind=ik) :: i,j,k
-      LOGICAL :: issent,numchanged
+C      LOGICAL :: issent,numchanged
+c     BM: More efficient to use an array for issent
+      LOGICAL :: numchanged
+      LOGICAL :: issent (1:tracer_num)
       REAL(kind=rk), allocatable :: sbuffer_tl(:,:)
       REAL(kind=rk), allocatable :: rbuffer_tl(:,:)
       REAL(kind=rk), allocatable :: sbuffer_tr(:,:)
@@ -585,6 +589,8 @@ c     ==================================================================
       nsend_l = 0
       nsend_r = 0
       numchanged = .false.
+c     BM: Initially set issent to false.
+      issent (:) = .false.
       WRITE(9999,*) "START MPI TRACER TIME = ",time," ",nstep
       do i=1,tracer_num
             call tci_search(i)
@@ -615,7 +621,9 @@ c     ==================================================================
       nsl=0
       nsr=0
       do i = 1,tracer_num
-        if(pos_tracer_theta(i).ge.theta_if(0)) then
+C     if(pos_tracer_theta(i).ge.theta_if(0)) then
+c     BM: Change .ge. to .gt. here:
+        if(pos_tracer_theta(i).gt.theta_if(0)) then
           if(pos_tracer_theta(i).lt.theta_if(n_s-1)) then
             nsl = nsl+1
             sbuffer_tl(nsl,1) = tracer_id(i)
@@ -623,11 +631,15 @@ c     ==================================================================
             sbuffer_tl(nsl,3) = pos_tracer_theta(i)
             sbuffer_tl(nsl,4) = tracer_ci_r(i)
             sbuffer_tl(nsl,5) = tracer_proc(i)
+c     BM
+            issent (i) = .TRUE.
           end if
         else
           pos_tracer_theta(i) = - pos_tracer_theta(i)
         end if
-        if(pos_tracer_theta(i).ge.theta_if(0)) then
+c        if(pos_tracer_theta(i).ge.theta_if(0)) then
+c     BM: I believe the previous line should instead be
+        if(pos_tracer_theta(i).lt.theta_if(n)) then
           if(pos_tracer_theta(i).gt.theta_if(n_e)) then
             nsr = nsr + 1
             sbuffer_tr(nsr,1) = tracer_id(i)
@@ -635,6 +647,8 @@ c     ==================================================================
             sbuffer_tr(nsr,3) = pos_tracer_theta(i)
             sbuffer_tr(nsr,4) = tracer_ci_r(i)
             sbuffer_tr(nsr,5) = tracer_proc(i)
+c     BM
+            issent (i) = .TRUE.
           end if
         else
             pos_tracer_theta(i) = 2.0_rk * pc_pi - pos_tracer_theta(i)
@@ -676,21 +690,23 @@ c      WRITE(9999,*) "TEST4"
 c     WRITE(9999,*) "TEST5"
       nns = 0
       ndebug = 0
-      LOOP_Main:do i = 1,tracer_num  
-        issent = .false.
-        LOOP_FINDL:do j=1,nsend_l 
-            if(tracer_id(i).eq.sbuffer_tl(j,1)) then
-                issent = .true.
-                EXIT LOOP_FINDL
-            end if
-        end do LOOP_FINDL
-        LOOP_FINDR: do j=1,nsend_r
-            if(tracer_id(i).eq.sbuffer_tr(j,1)) then
-                issent = .true.
-                EXIT LOOP_FINDR
-            end if
-        end do LOOP_FINDR
-        if(.not.issent) then
+      LOOP_Main:do i = 1,tracer_num
+c     BM: You can code this more efficiently
+c$$$        issent = .false.
+c$$$        LOOP_FINDL:do j=1,nsend_l 
+c$$$            if(tracer_id(i).eq.sbuffer_tl(j,1)) then
+c$$$                issent = .true.
+c$$$                EXIT LOOP_FINDL
+c$$$            end if
+c$$$        end do LOOP_FINDL
+c$$$        LOOP_FINDR: do j=1,nsend_r
+c$$$            if(tracer_id(i).eq.sbuffer_tr(j,1)) then
+c$$$                issent = .true.
+c$$$                EXIT LOOP_FINDR
+c$$$            end if
+c$$$        end do LOOP_FINDR
+c$$$        if(.not.issent) then
+        if(.not.issent(i)) then
             nns = nns+1
             buffer_tnew(nns,1) = tracer_id(i)
             buffer_tnew(nns,2) = pos_tracer_r(i)
@@ -750,13 +766,15 @@ c     WRITE(9999,*) "TEST5"
       nns = nns+  nrecv_l
       buffer_tnew(nns+1:tracer_num_new,:) = rbuffer_tr(:,:)
 
-      deallocate(tracer_id,pos_tracer_r,pos_tracer_theta,tracer_ci_r)
+      deallocate(tracer_id,pos_tracer_r,pos_tracer_theta,tracer_ci_r
+     & ,tracer_proc)
 
       allocate(
      &  tracer_id(tracer_num_new),
      &  pos_tracer_r(tracer_num_new),
      &  pos_tracer_theta(tracer_num_new),
-     &  tracer_ci_r(tracer_num_new))
+     &  tracer_ci_r(tracer_num_new),
+     &  tracer_proc(tracer_num_new))
 
       tracer_id = buffer_tnew(:,1)
       pos_tracer_r = buffer_tnew(:,2)
