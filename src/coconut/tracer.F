@@ -578,7 +578,8 @@ c     BM: More efficient to use an array for issent
       REAL(kind=rk), allocatable :: sbuffer_tr(:,:)
       REAL(kind=rk), allocatable :: rbuffer_tr(:,:)
       
-      REAL(kind=rk), allocatable :: buffer_tnew(:,:)
+      REAL(kind=rk) :: buffer_tnew(1:2000,1:5)
+c      REAL(kind=rk), allocatable :: buffer_tnew(:,:)
 
       INTEGER (kind=ik) :: src, dest, ierr, mpistat (MPI_STATUS_SIZE)
       
@@ -685,8 +686,8 @@ c     BM
             WRITE(9999,*) "TRACER_NUM",tracer_num
       END IF
 c      WRITE(9999,*) "TEST4"
-      allocate(buffer_tnew(1:tracer_num_new,1:5),
-     &  stat=istat)
+c      allocate(buffer_tnew(1:tracer_num_new,1:5),
+c     &  stat=istat)
 c     WRITE(9999,*) "TEST5"
       nns = 0
       ndebug = 0
@@ -762,29 +763,29 @@ c$$$        if(.not.issent) then
                   WRITE(9999,*) rbuffer_tr(i,5)
             end do
       end if
-      buffer_tnew(nns+1:nns+nrecv_l,:) = rbuffer_tl(:,:)
+      buffer_tnew(nns+1:nns+nrecv_l,1:5) = rbuffer_tl(1:nrecv_l,1:5)
       nns = nns+  nrecv_l
-      buffer_tnew(nns+1:tracer_num_new,:) = rbuffer_tr(:,:)
+      buffer_tnew(nns+1:tracer_num_new,1:5) = rbuffer_tr(1:nrecv_r,1:5)
 
-      deallocate(tracer_id,pos_tracer_r,pos_tracer_theta,tracer_ci_r
-     & ,tracer_proc)
+c      deallocate(tracer_id,pos_tracer_r,pos_tracer_theta,tracer_ci_r
+c     & ,tracer_proc)
 
-      allocate(
-     &  tracer_id(tracer_num_new),
-     &  pos_tracer_r(tracer_num_new),
-     &  pos_tracer_theta(tracer_num_new),
-     &  tracer_ci_r(tracer_num_new),
-     &  tracer_proc(tracer_num_new))
+c      allocate(
+c     &  tracer_id(tracer_num_new),
+c     &  pos_tracer_r(tracer_num_new),
+c     &  pos_tracer_theta(tracer_num_new),
+c     &  tracer_ci_r(tracer_num_new),
+c     &  tracer_proc(tracer_num_new))
 
-      tracer_id = buffer_tnew(:,1)
-      pos_tracer_r = buffer_tnew(:,2)
-      pos_tracer_theta = buffer_tnew(:,3)
-      tracer_ci_r = buffer_tnew(:,4)
-      tracer_proc = buffer_tnew(:,5)
+      tracer_id = buffer_tnew(1:tracer_num_new,1)
+      pos_tracer_r = buffer_tnew(1:tracer_num_new,2)
+      pos_tracer_theta = buffer_tnew(1:tracer_num_new,3)
+      tracer_ci_r = buffer_tnew(1:tracer_num_new,4)
+      tracer_proc = buffer_tnew(1:tracer_num_new,5)
       tracer_num = tracer_num_new
       WRITE(9999,*) "New Tracers NUM:",tracer_num_new
-      deallocate(sbuffer_tl,sbuffer_tr,rbuffer_tl,
-     &  rbuffer_tr,buffer_tnew)
+c      deallocate(sbuffer_tl,sbuffer_tr,rbuffer_tl,
+c     &  rbuffer_tr,buffer_tnew)
       do i=1,tracer_num_new
             WRITE(9999,*) "-----------------------"
             WRITE(9999,*) "local id:",i
