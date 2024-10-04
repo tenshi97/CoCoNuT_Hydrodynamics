@@ -567,7 +567,7 @@ c     ==================================================================
       use intgrs_hy, only : nstep
       INTEGER :: istat
       INTEGER(kind=ik) :: nsend_l,nsend_r,nrecv_l,nrecv_r,tracer_num_new
-      INTEGER(kind=ik) :: nsl,nsr,nns,ndebug
+      INTEGER(kind=ik) :: nns,ndebug
       INTEGER(kind=ik) :: i,j,k
 C      LOGICAL :: issent,numchanged
 c     BM: More efficient to use an array for issent
@@ -592,45 +592,25 @@ c     BM: More efficient to use an array for issent
 c     BM: Initially set issent to false.
       issent (:) = .false.
       WRITE(9999,*) "START MPI TRACER TIME = ",time," ",nstep
-      do i=1,tracer_num
-            call tci_search(i)
-            call tci_t_search(i)
-            if(pos_tracer_theta(i).lt.theta_if(n_s-1)) then
-                  nsend_l = nsend_l + 1
-                  WRITE(9999,*) "-----------------------"
-                  WRITE(9999,*) "TRACER TO BE SENT TO LEFT:"
-                  WRITE(9999,*) "TRACER ID:",tracer_id(i)
-                  WRITE(9999,*) "POS_R:", pos_tracer_r(i)
-                  WRITE(9999,*) "POS_THETA:",pos_tracer_theta(i)
-                  WRITE(9999,*) "TRACER_CI_R",tracer_ci_r(i)
-            end if
-            if(pos_tracer_theta(i).gt.theta_if(n_e)) then
-                  nsend_r = nsend_r + 1
-                  WRITE(9999,*) "-----------------------"
-                  WRITE(9999,*) "TRACER TO BE SENT TO RIGHT:"
-                  WRITE(9999,*) "TRACER ID:",tracer_id(i)
-                  WRITE(9999,*) "POS_R:", pos_tracer_r(i)
-                  WRITE(9999,*) "POS_THETA:",pos_tracer_theta(i)
-                  WRITE(9999,*) "TRACER_CI_R",tracer_ci_r(i)
-            end if
-      end do
-      WRITE(9999,*) "NSEND_L:",nsend_l,"NSEND_R:",nsend_r
-      allocate(sbuffer_tl(1:nsend_l,1:5),sbuffer_tr(1:nsend_r,1:5),
-     &  stat=istat)
-      WRITE(9999,*) "COUNTING SEND FINISHED"
-      nsl=0
-      nsr=0
       do i = 1,tracer_num
+        call tci_search(i)
+        call tci_t_search(i)
 C     if(pos_tracer_theta(i).ge.theta_if(0)) then
 c     BM: Change .ge. to .gt. here:
         if(pos_tracer_theta(i).gt.theta_if(0)) then
           if(pos_tracer_theta(i).lt.theta_if(n_s-1)) then
-            nsl = nsl+1
-            sbuffer_tl(nsl,1) = tracer_id(i)
-            sbuffer_tl(nsl,2) = pos_tracer_r(i)
-            sbuffer_tl(nsl,3) = pos_tracer_theta(i)
-            sbuffer_tl(nsl,4) = tracer_ci_r(i)
-            sbuffer_tl(nsl,5) = tracer_proc(i)
+            nsend_l = nsend_l + 1
+            sbuffer_tl(nsend_l,1) = tracer_id(i)
+            sbuffer_tl(nsend_l,2) = pos_tracer_r(i)
+            sbuffer_tl(nsend_l,3) = pos_tracer_theta(i)
+            sbuffer_tl(nsend_l,4) = tracer_ci_r(i)
+            sbuffer_tl(nsend_l,5) = tracer_proc(i)
+            WRITE(9999,*) "-----------------------"
+            WRITE(9999,*) "TRACER TO BE SENT TO LEFT:"
+            WRITE(9999,*) "TRACER ID:",tracer_id(i)
+            WRITE(9999,*) "POS_R:", pos_tracer_r(i)
+            WRITE(9999,*) "POS_THETA:",pos_tracer_theta(i)
+            WRITE(9999,*) "TRACER_CI_R",tracer_ci_r(i)
 c     BM
             issent (i) = .TRUE.
           end if
@@ -641,12 +621,18 @@ c        if(pos_tracer_theta(i).ge.theta_if(0)) then
 c     BM: I believe the previous line should instead be
         if(pos_tracer_theta(i).lt.theta_if(n)) then
           if(pos_tracer_theta(i).gt.theta_if(n_e)) then
-            nsr = nsr + 1
-            sbuffer_tr(nsr,1) = tracer_id(i)
-            sbuffer_tr(nsr,2) = pos_tracer_r(i)
-            sbuffer_tr(nsr,3) = pos_tracer_theta(i)
-            sbuffer_tr(nsr,4) = tracer_ci_r(i)
-            sbuffer_tr(nsr,5) = tracer_proc(i)
+            nsend_r = nsend_r + 1
+            sbuffer_tr(nsend_r,1) = tracer_id(i)
+            sbuffer_tr(nsend_r,2) = pos_tracer_r(i)
+            sbuffer_tr(nsend_r,3) = pos_tracer_theta(i)
+            sbuffer_tr(nsend_r,4) = tracer_ci_r(i)
+            sbuffer_tr(nsend_r,5) = tracer_proc(i)
+            WRITE(9999,*) "-----------------------"
+            WRITE(9999,*) "TRACER TO BE SENT TO RIGHT:"
+            WRITE(9999,*) "TRACER ID:",tracer_id(i)
+            WRITE(9999,*) "POS_R:", pos_tracer_r(i)
+            WRITE(9999,*) "POS_THETA:",pos_tracer_theta(i)
+            WRITE(9999,*) "TRACER_CI_R",tracer_ci_r(i)
 c     BM
             issent (i) = .TRUE.
           end if
@@ -654,7 +640,14 @@ c     BM
             pos_tracer_theta(i) = 2.0_rk * pc_pi - pos_tracer_theta(i)
         end if
       end do
-      WRITE(9999,*) "SBUFFER FINISHED"
+
+      WRITE(9999,*) "NSEND_L:",nsend_l,"NSEND_R:",nsend_r
+      allocate(sbuffer_tl(1:nsend_l,1:5),sbuffer_tr(1:nsend_r,1:5),
+     &  stat=istat)
+
+      WRITE(9999,*) "COUNTING SEND AND SBUFFER FINISHED"
+
+      
       call MPI_Cart_shift(cart_comm,0,-1,src,dest,ierr)
       call MPI_Sendrecv (nsend_l,1,
      &  MPI_INTEGER,dest,tag_ysndl,nrecv_r,
