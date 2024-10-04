@@ -70,9 +70,9 @@ c      WRITE(unit=dfilename,fmt="('debugmpi/file',i,'.dat')") myproc
      &  tracer_ci_theta(tracer_num),
      &  nan_check(tracer_num),
      &  neg_check(tracer_num),
-     &  tracer_id(tracer_num),
-     &  tracer_proc(tracer_num),
      &  stat=istat)
+      allocate(tracer_id(2000),tracer_proc(2000),stat=istat)
+c     first don't allocate tracer_id and tracer_proc
       tracer_ci_r = -2_ik
       tracer_ci_theta =-2_ik
       neg_check = .false.
