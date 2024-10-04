@@ -767,7 +767,7 @@ c$$$        if(.not.issent) then
       buffer_tnew(nns+1:tracer_num_new,1:5) = rbuffer_tr(1:nrecv_r,1:5)
 
       deallocate(pos_tracer_r,pos_tracer_theta,tracer_ci_r)
-
+c     EXP1:remove allocation of tracer_id and tracer_proc,125913854,failed,invalid pointer
       allocate(
      &  pos_tracer_r(tracer_num_new),
      &  pos_tracer_theta(tracer_num_new),
