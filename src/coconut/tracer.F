@@ -660,6 +660,8 @@ c     BM
             WRITE(9999,*) "ERROR:SNED NUM IS NOT AS EXPECTED"
       end if
       WRITE(9999,*) "SBUFFER FINISHED"
+
+      
       call MPI_Cart_shift(cart_comm,0,-1,src,dest,ierr)
       call MPI_Sendrecv (nsend_l,1,
      &  MPI_INTEGER,dest,tag_ysndl,nrecv_r,
