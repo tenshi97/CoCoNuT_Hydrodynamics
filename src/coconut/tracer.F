@@ -448,9 +448,9 @@ c     ==================================================================
       IMPLICIT NONE
       
       integer (KIND=ik) :: i,tci_r,tci_t
-      IF(time-tracer_printtime.le.0.0001_rk) THEN
-            return
-      END IF
+c      IF(time-tracer_printtime.le.0.0001_rk) THEN
+c            return
+c      END IF
       tracer_printtime = time
       LOOP_PRINT: DO i=1,tracer_num
             tci_r = tracer_ci_r(i)
