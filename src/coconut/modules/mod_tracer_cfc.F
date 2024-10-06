@@ -55,10 +55,10 @@ c      WRITE(unit=dfilename,fmt="('debugmpi/file',i,'.dat')") myproc
       open(UNIT=9999,FILE=mpifilename)
       tracer_num = 20
       allocate(
-     &  pos_tracer_r(tracer_num),
+     &  tracer_id(tracer_num),
      &  pos_tracer_r_old(tracer_num),
-     &  pos_tracer_theta(tracer_num),
      &  pos_tracer_theta_old(tracer_num),
+     &  tracer_proc(tracer_num),
      &  v_1_tracer(tracer_num),
      &  v_2_tracer(tracer_num),
      &  temp_tracer(tracer_num),
@@ -71,12 +71,13 @@ c      WRITE(unit=dfilename,fmt="('debugmpi/file',i,'.dat')") myproc
      &  nan_check(tracer_num),
      &  neg_check(tracer_num),
      &  stat=istat)
-      allocate(tracer_id(2000),tracer_proc(2000),stat=istat)
 c     first don't allocate tracer_id and tracer_proc
       tracer_ci_r = -2_ik
       tracer_ci_theta =-2_ik
       neg_check = .false.
       nan_check = .false.
+      allocate(pos_tracer_r(2000),pos_tracer_theta(2000)
+     &  stat=istat)
       do i=1,tracer_num
             tracer_id(i) = myproc*tracer_num+i
       end do

@@ -448,9 +448,9 @@ c     ==================================================================
       IMPLICIT NONE
       
       integer (KIND=ik) :: i,tci_r,tci_t
-      IF(time-tracer_printtime.le.0.0001_rk) THEN
-            return
-      END IF
+c      IF(time-tracer_printtime.le.0.0001_rk) THEN
+c            return
+c      END IF
       tracer_printtime = time
       LOOP_PRINT: DO i=1,tracer_num
             tci_r = tracer_ci_r(i)
@@ -578,7 +578,7 @@ c     BM: More efficient to use an array for issent
       REAL(kind=rk), allocatable :: sbuffer_tr(:,:)
       REAL(kind=rk), allocatable :: rbuffer_tr(:,:)
       
-      REAL(kind=rk) :: buffer_tnew(1:2000,1:5)
+      REAL(kind=rk), allocatable :: buffer_tnew(:,:)
 
       INTEGER (kind=ik) :: src, dest, ierr, mpistat (MPI_STATUS_SIZE)
       
@@ -691,8 +691,9 @@ c     BM
             WRITE(9999,*) "TRACER_NUM_NEW:",tracer_num_new
             WRITE(9999,*) "TRACER_NUM",tracer_num
       END IF
-c      WRITE(9999,*) "TEST4"
-c     WRITE(9999,*) "TEST5"
+      WRITE(9999,*) "ALLOCATE BUFFER_TNEW PRE",nstep
+      allocate(buffer_tnew(tracer_num_new),stat=istat)
+      WRITE(9999,*) "ALLOCATE BUFFER_TNEW POST",nstep
       nns = 0
       ndebug = 0
       LOOP_Main:do i = 1,tracer_num
@@ -771,13 +772,13 @@ c$$$        if(.not.issent) then
       nns = nns+  nrecv_l
       buffer_tnew(nns+1:tracer_num_new,1:5) = rbuffer_tr(1:nrecv_r,1:5)
 
-      deallocate(tracer_id,pos_tracer_r,pos_tracer_theta,tracer_ci_r
+      deallocate(tracer_id,tracer_ci_r
      &  ,tracer_proc)
 c     EXP1:remove allocation of tracer_id and tracer_proc,125913854,failed,invalid pointer
+c     EXP2:remove allocation of buffer_tnew, stuck
+c     EXP3:remove allocation of pos_tracer_r and pos_tracer_theta
       allocate(
      &  tracer_id(tracer_num_new),
-     &  pos_tracer_r(tracer_num_new),
-     &  pos_tracer_theta(tracer_num_new),
      &  tracer_ci_r(tracer_num_new),
      &  tracer_proc(tracer_num_new),
      &  stat=istat)
@@ -788,9 +789,9 @@ c     EXP1:remove allocation of tracer_id and tracer_proc,125913854,failed,inval
       tracer_ci_r = buffer_tnew(1:tracer_num_new,4)
       tracer_proc = buffer_tnew(1:tracer_num_new,5)
       tracer_num = tracer_num_new
-      WRITE(9999,*) "New Tracers NUM:",tracer_num_new
+      WRITE(9999,*) "New Tracers NUM:",tracer_num_new,nstep
       deallocate(sbuffer_tl,sbuffer_tr,rbuffer_tl,
-     &  rbuffer_tr)
+     &  rbuffer_tr,buffer_tnew)
       do i=1,tracer_num_new
             WRITE(9999,*) "-----------------------"
             WRITE(9999,*) "local id:",i
