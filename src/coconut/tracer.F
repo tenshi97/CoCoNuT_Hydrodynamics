@@ -622,6 +622,12 @@ c     BM: Change .ge. to .gt. here:
             sbuffer_tl(nsl,3) = pos_tracer_theta(i)
             sbuffer_tl(nsl,4) = tracer_ci_r(i)
             sbuffer_tl(nsl,5) = tracer_proc(i)
+            WRITE(9999,*) "-----------------------"
+            WRITE(9999,*) "TRACER TO BE SENT TO LEFT:"
+            WRITE(9999,*) "TRACER ID:",tracer_id(i)
+            WRITE(9999,*) "POS_R:", pos_tracer_r(i)
+            WRITE(9999,*) "POS_THETA:",pos_tracer_theta(i)
+            WRITE(9999,*) "TRACER_CI_R",tracer_ci_r(i)
 c     BM
             issent (i) = .TRUE.
           end if
@@ -638,6 +644,12 @@ c     BM: I believe the previous line should instead be
             sbuffer_tr(nsr,3) = pos_tracer_theta(i)
             sbuffer_tr(nsr,4) = tracer_ci_r(i)
             sbuffer_tr(nsr,5) = tracer_proc(i)
+            WRITE(9999,*) "-----------------------"
+            WRITE(9999,*) "TRACER TO BE SENT TO RIGHT:"
+            WRITE(9999,*) "TRACER ID:",tracer_id(i)
+            WRITE(9999,*) "POS_R:", pos_tracer_r(i)
+            WRITE(9999,*) "POS_THETA:",pos_tracer_theta(i)
+            WRITE(9999,*) "TRACER_CI_R",tracer_ci_r(i)
 c     BM
             issent (i) = .TRUE.
           end if
@@ -645,7 +657,11 @@ c     BM
             pos_tracer_theta(i) = 2.0_rk * pc_pi - pos_tracer_theta(i)
         end if
       end do
+      if(nsl/=nsend_l.or.nsr/=nsend_r) then
+            WRITE(9999,*) "ERROR:SNED NUM IS NOT AS EXPECTED"
+      end if
       WRITE(9999,*) "SBUFFER FINISHED"
+      
       call MPI_Cart_shift(cart_comm,0,-1,src,dest,ierr)
       call MPI_Sendrecv (nsend_l,1,
      &  MPI_INTEGER,dest,tag_ysndl,nrecv_r,
