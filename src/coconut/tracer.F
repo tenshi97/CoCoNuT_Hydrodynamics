@@ -578,7 +578,7 @@ c     BM: More efficient to use an array for issent
       REAL(kind=rk), allocatable :: sbuffer_tr(:,:)
       REAL(kind=rk), allocatable :: rbuffer_tr(:,:)
       
-      REAL(kind=rk), allocatable :: buffer_tnew(:,:)
+      REAL(kind=rk) :: buffer_tnew(1:2000,1:5)
 
       INTEGER (kind=ik) :: src, dest, ierr, mpistat (MPI_STATUS_SIZE)
       
@@ -595,23 +595,13 @@ c     BM: Initially set issent to false.
       do i=1,tracer_num
             call tci_search(i)
             call tci_t_search(i)
-            if(pos_tracer_theta(i).lt.theta_if(n_s-1)) then
+            if(pos_tracer_theta(i).lt.theta_if(n_s-1)
+     &      .and.pos_tracer_theta(i).gt.theta_if(0)) then
                   nsend_l = nsend_l + 1
-                  WRITE(9999,*) "-----------------------"
-                  WRITE(9999,*) "TRACER TO BE SENT TO LEFT:"
-                  WRITE(9999,*) "TRACER ID:",tracer_id(i)
-                  WRITE(9999,*) "POS_R:", pos_tracer_r(i)
-                  WRITE(9999,*) "POS_THETA:",pos_tracer_theta(i)
-                  WRITE(9999,*) "TRACER_CI_R",tracer_ci_r(i)
             end if
-            if(pos_tracer_theta(i).gt.theta_if(n_e)) then
+            if(pos_tracer_theta(i).gt.theta_if(n_e)
+     &      .and.pos_tracer_theta(i).lt.theta_if(n)) then
                   nsend_r = nsend_r + 1
-                  WRITE(9999,*) "-----------------------"
-                  WRITE(9999,*) "TRACER TO BE SENT TO RIGHT:"
-                  WRITE(9999,*) "TRACER ID:",tracer_id(i)
-                  WRITE(9999,*) "POS_R:", pos_tracer_r(i)
-                  WRITE(9999,*) "POS_THETA:",pos_tracer_theta(i)
-                  WRITE(9999,*) "TRACER_CI_R",tracer_ci_r(i)
             end if
       end do
       WRITE(9999,*) "NSEND_L:",nsend_l,"NSEND_R:",nsend_r
@@ -631,6 +621,12 @@ c     BM: Change .ge. to .gt. here:
             sbuffer_tl(nsl,3) = pos_tracer_theta(i)
             sbuffer_tl(nsl,4) = tracer_ci_r(i)
             sbuffer_tl(nsl,5) = tracer_proc(i)
+            WRITE(9999,*) "-----------------------"
+            WRITE(9999,*) "TRACER TO BE SENT TO LEFT:"
+            WRITE(9999,*) "TRACER ID:",tracer_id(i)
+            WRITE(9999,*) "POS_R:", pos_tracer_r(i)
+            WRITE(9999,*) "POS_THETA:",pos_tracer_theta(i)
+            WRITE(9999,*) "TRACER_CI_R",tracer_ci_r(i)
 c     BM
             issent (i) = .TRUE.
           end if
@@ -647,6 +643,12 @@ c     BM: I believe the previous line should instead be
             sbuffer_tr(nsr,3) = pos_tracer_theta(i)
             sbuffer_tr(nsr,4) = tracer_ci_r(i)
             sbuffer_tr(nsr,5) = tracer_proc(i)
+            WRITE(9999,*) "-----------------------"
+            WRITE(9999,*) "TRACER TO BE SENT TO RIGHT:"
+            WRITE(9999,*) "TRACER ID:",tracer_id(i)
+            WRITE(9999,*) "POS_R:", pos_tracer_r(i)
+            WRITE(9999,*) "POS_THETA:",pos_tracer_theta(i)
+            WRITE(9999,*) "TRACER_CI_R",tracer_ci_r(i)
 c     BM
             issent (i) = .TRUE.
           end if
@@ -654,7 +656,12 @@ c     BM
             pos_tracer_theta(i) = 2.0_rk * pc_pi - pos_tracer_theta(i)
         end if
       end do
+      if(nsl/=nsend_l.or.nsr/=nsend_r) then
+            WRITE(9999,*) "ERROR:SNED NUM IS NOT AS EXPECTED"
+      end if
       WRITE(9999,*) "SBUFFER FINISHED"
+
+
       call MPI_Cart_shift(cart_comm,0,-1,src,dest,ierr)
       call MPI_Sendrecv (nsend_l,1,
      &  MPI_INTEGER,dest,tag_ysndl,nrecv_r,
@@ -685,8 +692,6 @@ c     BM
             WRITE(9999,*) "TRACER_NUM",tracer_num
       END IF
 c      WRITE(9999,*) "TEST4"
-      allocate(buffer_tnew(1:tracer_num_new,1:5),
-     &  stat=istat)
 c     WRITE(9999,*) "TEST5"
       nns = 0
       ndebug = 0
@@ -766,12 +771,16 @@ c$$$        if(.not.issent) then
       nns = nns+  nrecv_l
       buffer_tnew(nns+1:tracer_num_new,1:5) = rbuffer_tr(1:nrecv_r,1:5)
 
-      deallocate(pos_tracer_r,pos_tracer_theta,tracer_ci_r)
+      deallocate(tracer_id,pos_tracer_r,pos_tracer_theta,tracer_ci_r
+     &  ,tracer_proc)
 c     EXP1:remove allocation of tracer_id and tracer_proc,125913854,failed,invalid pointer
       allocate(
+     &  tracer_id(tracer_num_new),
      &  pos_tracer_r(tracer_num_new),
      &  pos_tracer_theta(tracer_num_new),
-     &  tracer_ci_r(tracer_num_new))
+     &  tracer_ci_r(tracer_num_new),
+     &  tracer_proc(tracer_num_new),
+     &  stat=istat)
 
       tracer_id = buffer_tnew(1:tracer_num_new,1)
       pos_tracer_r = buffer_tnew(1:tracer_num_new,2)
@@ -781,7 +790,7 @@ c     EXP1:remove allocation of tracer_id and tracer_proc,125913854,failed,inval
       tracer_num = tracer_num_new
       WRITE(9999,*) "New Tracers NUM:",tracer_num_new
       deallocate(sbuffer_tl,sbuffer_tr,rbuffer_tl,
-     &  rbuffer_tr,buffer_tnew)
+     &  rbuffer_tr)
       do i=1,tracer_num_new
             WRITE(9999,*) "-----------------------"
             WRITE(9999,*) "local id:",i
