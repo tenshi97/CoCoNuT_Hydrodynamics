@@ -596,23 +596,13 @@ c     BM: Initially set issent to false.
       do i=1,tracer_num
             call tci_search(i)
             call tci_t_search(i)
-            if(pos_tracer_theta(i).lt.theta_if(n_s-1)) then
+            if(pos_tracer_theta(i).lt.theta_if(n_s-1)
+     &      .and.pos_tracer_theta(i).gt.theta_if(0)) then
                   nsend_l = nsend_l + 1
-                  WRITE(9999,*) "-----------------------"
-                  WRITE(9999,*) "TRACER TO BE SENT TO LEFT:"
-                  WRITE(9999,*) "TRACER ID:",tracer_id(i)
-                  WRITE(9999,*) "POS_R:", pos_tracer_r(i)
-                  WRITE(9999,*) "POS_THETA:",pos_tracer_theta(i)
-                  WRITE(9999,*) "TRACER_CI_R",tracer_ci_r(i)
             end if
-            if(pos_tracer_theta(i).gt.theta_if(n_e)) then
+            if(pos_tracer_theta(i).gt.theta_if(n_e)
+     &      .and.pos_tracer_theta(i).lt.theta_if(n)) then
                   nsend_r = nsend_r + 1
-                  WRITE(9999,*) "-----------------------"
-                  WRITE(9999,*) "TRACER TO BE SENT TO RIGHT:"
-                  WRITE(9999,*) "TRACER ID:",tracer_id(i)
-                  WRITE(9999,*) "POS_R:", pos_tracer_r(i)
-                  WRITE(9999,*) "POS_THETA:",pos_tracer_theta(i)
-                  WRITE(9999,*) "TRACER_CI_R",tracer_ci_r(i)
             end if
       end do
       WRITE(9999,*) "NSEND_L:",nsend_l,"NSEND_R:",nsend_r
