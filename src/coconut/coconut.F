@@ -1113,7 +1113,7 @@ ccc   recover the primitive (physical) variables rho, v^i, W, epsilon
 
       end do
       call MPI_TRACER
-      call parameter_interp2
+c      call parameter_interp2
       call tracer_print
 
 ccc   end of Runge-Kutta loop

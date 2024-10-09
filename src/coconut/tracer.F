@@ -774,14 +774,17 @@ c$$$        if(.not.issent) then
       buffer_tnew(nns+1:tracer_num_new,:) = rbuffer_tr(:,:)
 
       deallocate(tracer_id,pos_tracer_r,pos_tracer_theta,tracer_ci_r
-     & ,tracer_proc)
+     & ,tracer_proc,pos_tracer_r_old,pos_tracer_theta_old)
 
       allocate(
      &  tracer_id(tracer_num_new),
      &  pos_tracer_r(tracer_num_new),
      &  pos_tracer_theta(tracer_num_new),
      &  tracer_ci_r(tracer_num_new),
-     &  tracer_proc(tracer_num_new))
+     &  tracer_proc(tracer_num_new),
+     &  pos_tracer_r_old(tracer_num_new),
+     &  pos_tracer_theta_old(tracer_num_new),
+     &  stat=istat)
 
       tracer_id = buffer_tnew(:,1)
       pos_tracer_r = buffer_tnew(:,2)
