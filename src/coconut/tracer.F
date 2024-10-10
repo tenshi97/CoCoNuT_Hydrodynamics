@@ -164,17 +164,21 @@ c     ==================================================================
       USE mo_mpi
       IMPLICIT NONE
       integer (KIND=ik) :: i,t_c
+      real (KIND=rk) :: r_upper,r_lower,q
       t_c = n_s
-      do i =1,m
-         WRITE(7777,*) 'Radial Cell',i,'(',r_if(i-1),',',
-     &   r_if(i),')'
+c      do i =1,m
+c         WRITE(7777,*) 'Radial Cell',i,'(',r_if(i-1),',',
+c     &   r_if(i),')'
+c      end do
+c      do i = n_s,n_e
+c            WRITE(7777,*) 'Theta Cell',i, '(', theta_if(i-1),',',
+c     &     theta_if(i),')'
       end do
-      do i = n_s,n_e
-            WRITE(7777,*) 'Theta Cell',i, '(', theta_if(i-1),',',
-     &     theta_if(i),')'
-      end do
+      r_lower = 1.5e+6_rk
+      r_upper = 1e+9_rk
+      q = (r_upper/r_lower) ** (1.0_rk / (tracer_num-1))
       init_loop: do i=1,tracer_num
-                  pos_tracer_r(i) = 1.5_rk**(i)*1e6;
+                  pos_tracer_r(i) = r_lower * ( q ** ((i-1)//4))
                   pos_tracer_theta(i) = theta(t_c)
                   tracer_proc(i) = myproc
                   t_c = t_c + 1
@@ -290,102 +294,15 @@ c     ==================================================================
       USE tracer_cfc
       USE configure
       USE gfloat_hy,ONLY: time
-      IMPLICIT NONE
-c     Currently we're using linear interpolation for every parameter
-c     But in further study we may use more accurate interpolation methods like Cubic Spline Interpolation
-      
-      INTEGER (KIND=ik) :: tci,i,j,tci_t
-      REAL (KIND=rk) :: dr_t,dth_t,sr
-      LOOP_INTERP:DO i=1, tracer_num
-            tci = tracer_ci_r(i)
-            tci_t = tracer_ci_theta(i)
-            IF (tci.eq.-1) THEN
-                  CYCLE LOOP_INTERP
-            END IF
-            IF ((tci_t.lt.n_s).or.(tci_t.gt.n_e)) THEN
-                      CYCLE LOOP_INTERP
-            END IF
 
-            dr_t = (pos_tracer_r(i)-r_if(tci-1))/(delta_r(tci))
-            dth_t = (pos_tracer_theta(i)-theta_if(tci_t-1))
- 
-            v_1_tracer(i) = v_1(tci-1,tci_t-1,1) +
-     &      (v_1(tci,tci_t-1,1)-v_1(tci-1,tci_t-1,1)) * dr_t +
-     &      (v_1(tci-1,tci_t,1)-v_1(tci-1,tci_t-1,1)) * dth_t
-            
-            v_2_tracer(i) = v_2(tci-1,tci_t-1,1) +
-     &      (v_2(tci,tci_t-1,1)-v_2(tci-1,tci_t-1,1)) * dr_t +
-     &      (v_2(tci-1,tci_t,1)-v_2(tci-1,tci_t-1,1)) * dth_t
-            
-            v_1_tracer(i) = g_up_11(tci,tci_t,1)*v_1_tracer(i)
-     &      -beta_up_1(tci,tci_t,1)/alpha(tci,tci_t,1)
-
-            v_2_tracer(i) = g_up_22(tci,tci_t,1)*v_2_tracer(i)
-     &      -beta_up_2(tci,tci_t,1)/alpha(tci,tci_t,1)
-            
-            temp_tracer(i) = t(tci-1,tci_t-1,1) + 
-     &      (t(tci,tci_t-1,1)-t(tci-1,tci_t-1,1)) * dr_t +
-     &      (t(tci-1,tci_t,1)-t(tci-1,tci_t-1,1)) * dth_t
-
-
-            
-            LOOP_XNNU:DO j=1,config%qn
-              xnnu_tracer(i,j) = xnnu(tci-1,tci_t-1,1,j)+
-     &        (xnnu(tci,tci_t-1,1,j)-xnnu(tci-1,tci_t-1,1,j))*dr_t +
-     &        (xnnu(tci-1,tci_t,1,j)-xnnu(tci-1,tci_t-1,1,j))*dth_t
-            END DO LOOP_XNNU
-            den_tracer(i) = rho(tci-1,tci_t-1,1)+
-     &      (rho(tci,tci_t-1,1)-rho(tci-1,tci_t-1,1))*dr_t+
-     &      (rho(tci-1,tci_t,1)-rho(tci-1,tci_t-1,1))*dth_t
-
-            pressure_tracer(i) = p(tci-1,tci_t-1,1)
-     &      +(p(tci,tci_t-1,1)-p(tci-1,tci_t-1,1))*dr_t
-     &      +(p(tci-1,tci_t,1)-p(tci-1,tci_t-1,1))*dth_t
-
-            entropy_tracer(i) = entropy(tci-1,tci_t-1,1)+
-     &      (entropy(tci,tci_t-1,1)-entropy(tci-1,tci_t-1,1))*dr_t +
-     &      (entropy(tci-1,tci_t,1)-entropy(tci-1,tci_t-1,1))*dth_t
-      END DO LOOP_INTERP
-
-      END SUBROUTINE parameter_interp
-c     ==================================================================
-
-      SUBROUTINE parameter_interp2()
-
-c     ==================================================================
-      USE precision
-      USE grid_cfc
-      USE hydro_primitives_cfc
-      USE metric_cfc
-      USE tracer_cfc
-      USE configure
-      USE gfloat_hy,ONLY: time
-      IMPLICIT NONE
-c     Currently we're using linear interpolation for every parameter
-c     But in further study we may use more accurate interpolation methods like Cubic Spline Interpolation
-      
       INTEGER (KIND=ik) :: ir,it,i,j
       REAL (KIND=rk) :: dr_t,dth_t,sr
-      LOGICAL :: inghz
 c      WRITE(9999,*) "TEST12"
       LOOP_INTERP:DO i=1, tracer_num
             inghz = .false.
             ir = tracer_ci_r(i)
             it = tracer_ci_theta(i)
 c            WRITE(9999,*) "TEST13",i,ir,it
-            IF ((ir.lt.0).or.(ir.gt.m)) THEN
-                  CYCLE LOOP_INTERP
-            END IF
-            IF ((it.lt.n_s-1).or.(it.gt.n_e+1)) THEN
-                  CYCLE LOOP_INTERP
-            END IF
-            IF(it.lt.n_s) THEN
-               inghz = .true.
-               it = n_s
-            ELSE IF(it.gt.n_e) THEN
-               inghz = .true.
-               it = n_e
-            END IF
 c            WRITE(9999,*) "TEST14"
 c            WRITE(8888,*) "----debug for v_1-----"
             v_1_tracer(i) = bilineary_interpolation
@@ -402,37 +319,34 @@ c            WRITE(8888,*) "----debug for v_2-----"
 
             v_2_tracer(i) = g_up_22(ir,it,1)*v_2_tracer(i)
      &      -beta_up_2(ir,it,1)/alpha(ir,it,1)
-            if(inghz) then
-               v_2_tracer(i) = -v_2_tracer(i)
-            end if
 c            WRITE(8888,*) "----debug for temp_tracer"
-            temp_tracer(i) = bilineary_interpolation
-     &      (t(-1:m+1,n_s-1:n_e+1,1),-1,m+1,n_s-1,n_e+1,1,1,i
-     &      ,.true.,"temperature")
+c           temp_tracer(i) = bilineary_interpolation
+c    &      (t(-1:m+1,n_s-1:n_e+1,1),-1,m+1,n_s-1,n_e+1,1,1,i
+c    &      ,.true.,"temperature")
             
 
 c            WRITE(8888,*) "----debug for xnnu"
-            LOOP_XNNU:DO j=1,config%qn
-            xnnu_tracer(i,j) = bilineary_interpolation
-     &      (xnnu(-1:m+1,n_s-1:n_e+1,1,j),-1,m+1,n_s-1,n_e+1,1,1,i
-     &      ,.false.,"xnnu")
-            END DO LOOP_XNNU
+c            LOOP_XNNU:DO j=1,config%qn
+c            xnnu_tracer(i,j) = bilineary_interpolation
+c     &      (xnnu(-1:m+1,n_s-1:n_e+1,1,j),-1,m+1,n_s-1,n_e+1,1,1,i
+c     &      ,.false.,"xnnu")
+c            END DO LOOP_XNNU
 c            WRITE(8888,*) "----debug for density----"
-            den_tracer(i) = bilineary_interpolation
-     &      (rho(-1:m+1,n_s-1:n_e+1,1),-1,m+1,n_s-1,n_e+1,1,1,i
-     &      ,.false.,"density")
+c            den_tracer(i) = bilineary_interpolation
+c     &      (rho(-1:m+1,n_s-1:n_e+1,1),-1,m+1,n_s-1,n_e+1,1,1,i
+c     &      ,.false.,"density")
 c            WRITE(8888,*) "----debug for pressure----"
-            pressure_tracer(i) = 
-     &      bilineary_interpolation(p(-1:m+1,n_s-1:n_e+1,1),
-     &      -1,m+1,n_s-1,n_e+1,1,1,i,.false.,"pressure")
+c            pressure_tracer(i) = 
+c     &      bilineary_interpolation(p(-1:m+1,n_s-1:n_e+1,1),
+c     &      -1,m+1,n_s-1,n_e+1,1,1,i,.false.,"pressure")
 c            WRITE(8888,*) "----debug for entropy----"
-            entropy_tracer(i) = 
-     &      bilineary_interpolation(entropy(-1:m+1,n_s-1:n_e+1,1),-1,
-     &      m+1,n_s-1,n_e+1,1,1,i,.false.,"entropy")
+c            entropy_tracer(i) = 
+c     &      bilineary_interpolation(entropy(-1:m+1,n_s-1:n_e+1,1),-1,
+c     &      m+1,n_s-1,n_e+1,1,1,i,.false.,"entropy")
 c           WRITE(9999,*) "TEST15"
       END DO LOOP_INTERP
 
-      END SUBROUTINE parameter_interp2
+      END SUBROUTINE parameter_interp
 c     ==================================================================
 
       SUBROUTINE tracer_print()
@@ -461,8 +375,8 @@ c     ==================================================================
             WRITE(7777,*) 'IPROC = ', tracer_proc(i)
             WRITE(7777,*) 'position r = ',pos_tracer_r(i),tci_r
             WRITE(7777,*) 'position theta = ', pos_tracer_theta(i),tci_t
-c            WRITE(7777,*) 'v = ',v_1_tracer(i)
-c            WRITE(7777,*) 'v_theta = ', v_2_tracer(i)
+            WRITE(7777,*) 'v_r = ',v_1_tracer(i)
+            WRITE(7777,*) 'v_theta = ', v_2_tracer(i)
 c            WRITE(7777,*) 't = ',temp_tracer(i)
 c            WRITE(7777,*) 'p = ',pressure_tracer(i)
 c            WRITE(7777,*) 's = ',entropy_tracer(i)
@@ -774,7 +688,8 @@ c$$$        if(.not.issent) then
       buffer_tnew(nns+1:tracer_num_new,:) = rbuffer_tr(:,:)
 
       deallocate(tracer_id,pos_tracer_r,pos_tracer_theta,tracer_ci_r
-     & ,tracer_proc,pos_tracer_r_old,pos_tracer_theta_old)
+     &  ,tracer_proc,pos_tracer_r_old,pos_tracer_theta_old,
+     &  v_1_tracer,v_2_tracer)
 
       allocate(
      &  tracer_id(tracer_num_new),
@@ -784,6 +699,8 @@ c$$$        if(.not.issent) then
      &  tracer_proc(tracer_num_new),
      &  pos_tracer_r_old(tracer_num_new),
      &  pos_tracer_theta_old(tracer_num_new),
+     &  v_1_tracer(tracer_num_new),
+     &  v_2_tracer(tracer_num_new),
      &  stat=istat)
 
       tracer_id = buffer_tnew(:,1)

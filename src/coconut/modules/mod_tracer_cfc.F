@@ -53,7 +53,7 @@ c      WRITE(unit=dfilename,fmt="('debugmpi/file',i,'.dat')") myproc
       OPEN(UNIT=7777,FILE=outfilename)
       OPEN(UNIT=8888,FILE=dfilename)
       open(UNIT=9999,FILE=mpifilename)
-      tracer_num = 20
+      tracer_num = 40
       allocate(
      &  pos_tracer_r(tracer_num),
      &  pos_tracer_r_old(tracer_num),
