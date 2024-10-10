@@ -176,7 +176,7 @@ c     &     theta_if(i),')'
 c      end do
       r_lower = 1.5e+6_rk
       r_upper = 1e+9_rk
-      q = (r_upper/r_lower) ** (1.0_rk / (tracer_num-1))
+      q = (r_upper/r_lower) ** (1.0_rk / (tracer_num/4_ik-1))
       init_loop: do i=1,tracer_num
                   pos_tracer_r(i) = r_lower * ( q ** ((i-1)/4_ik))
                   pos_tracer_theta(i) = theta(t_c)
