@@ -173,12 +173,12 @@ c      end do
 c      do i = n_s,n_e
 c            WRITE(7777,*) 'Theta Cell',i, '(', theta_if(i-1),',',
 c     &     theta_if(i),')'
-      end do
+c      end do
       r_lower = 1.5e+6_rk
       r_upper = 1e+9_rk
       q = (r_upper/r_lower) ** (1.0_rk / (tracer_num-1))
       init_loop: do i=1,tracer_num
-                  pos_tracer_r(i) = r_lower * ( q ** ((i-1)//4))
+                  pos_tracer_r(i) = r_lower * ( q ** ((i-1)/4_ik))
                   pos_tracer_theta(i) = theta(t_c)
                   tracer_proc(i) = myproc
                   t_c = t_c + 1
@@ -187,6 +187,10 @@ c     &     theta_if(i),')'
                   end if
                  call tci_search(i)
                  call tci_t_search(i)
+                 WRITE(7777,*) "TRACER",i,"INIT INFO:"
+                 WRITE(7777,*) "INIT INFO:R:",pos_tracer_r(i)
+                 WRITE(7777,*) "INIT INFO:THETA",pos_tracer_theta(i)
+                 WRITE(7777,*) "INIT INFO:GLOBAL ID", tracer_id(i) 
       end do init_loop
       END SUBROUTINE tracer_position_init
 c     Let's just start from 3rd-Runge-Kutta Method to predict the position evolution of the tracers, but first we should get the covariant velocity
@@ -299,7 +303,6 @@ c     ==================================================================
       REAL (KIND=rk) :: dr_t,dth_t,sr
 c      WRITE(9999,*) "TEST12"
       LOOP_INTERP:DO i=1, tracer_num
-            inghz = .false.
             ir = tracer_ci_r(i)
             it = tracer_ci_theta(i)
 c            WRITE(9999,*) "TEST13",i,ir,it
