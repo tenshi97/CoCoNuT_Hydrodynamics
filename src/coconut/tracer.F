@@ -32,7 +32,7 @@ c     ==================================================================
       UsE hydro_primitives_cfc
 
       USE tracer_cfc
-c     tracer_ci_r(i)---> the i-th tracer's cell index initialized as -2
+c     tracer_ci_r(i)--->the i-th tracer's cell index initialized as -2
       INTEGER (kind=ik) tci_r
       INTEGER (kind=ik), INTENT(IN) :: tracer_index
       REAL (kind=rk) :: pos_r
@@ -659,7 +659,8 @@ c$$$        if(.not.issent) then
      &  MPI_DOUBLE_PRECISION,dest,tag_ysndr,rbuffer_tl,
      &  nrecv_l*5,MPI_DOUBLE_PRECISION,
      &  src,tag_ysndr,cart_comm,mpistat,ierr)
-
+      n_ts = n_ts - nrecv_l + nsend_l
+      n_te = n_te + nrecv_r - nsend_r
       WRITE(9999,*) "BUFFER COMMUNICATION FINISHED"
 
       if((nns + nrecv_l +nrecv_r)/=tracer_num_new) then
@@ -690,15 +691,16 @@ c$$$        if(.not.issent) then
       nns = nns+  nrecv_l
       buffer_tnew(nns+1:tracer_num_new,:) = rbuffer_tr(:,:)
 
-      deallocate(tracer_id,pos_tracer_r,pos_tracer_theta,tracer_ci_r
-     &  ,tracer_proc,pos_tracer_r_old,pos_tracer_theta_old,
-     &  v_1_tracer,v_2_tracer)
+      deallocate(tracer_id,pos_tracer_r,pos_tracer_theta,tracer_ci_r,
+     &  tracer_ci_theta,tracer_proc,pos_tracer_r_old,
+     &  pos_tracer_theta_old,v_1_tracer,v_2_tracer)
 
       allocate(
      &  tracer_id(tracer_num_new),
      &  pos_tracer_r(tracer_num_new),
      &  pos_tracer_theta(tracer_num_new),
      &  tracer_ci_r(tracer_num_new),
+     &  tracer_ci_theta(tracer_num_new),
      &  tracer_proc(tracer_num_new),
      &  pos_tracer_r_old(tracer_num_new),
      &  pos_tracer_theta_old(tracer_num_new),
@@ -723,6 +725,7 @@ c$$$        if(.not.issent) then
             WRITE(9999,*) "pos_theta:",pos_tracer_theta(i)
             WRITE(9999,*) "radial ci index:",tracer_ci_r(i)
             WRITE(9999,*) "FROM PROC:",tracer_proc(i)
+            call tci_t_search(i)
       end do
       END SUBROUTINE MPI_TRACER
 c  ********************************************************************

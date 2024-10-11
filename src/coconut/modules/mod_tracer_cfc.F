@@ -28,6 +28,7 @@ c     ============================================================
       LOGICAL, allocatable :: nan_check(:)
       integer (kind=ik), allocatable :: tracer_id(:)
       integer (kind=ik), allocatable ::tracer_proc(:)
+      integer (kind=ik) n_ts,n_te
       CONTAINS
 c     ============================================================
 
@@ -77,6 +78,8 @@ c      WRITE(unit=dfilename,fmt="('debugmpi/file',i,'.dat')") myproc
       tracer_ci_theta =-2_ik
       neg_check = .false.
       nan_check = .false.
+      n_ts = myproc*tracer_num+1
+      n_te = myproc*tracer_num+tracer_num
       do i=1,tracer_num
             tracer_id(i) = myproc*tracer_num+i
       end do
