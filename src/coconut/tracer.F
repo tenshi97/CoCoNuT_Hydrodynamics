@@ -380,12 +380,12 @@ c     ==================================================================
             WRITE(7777,*) 'position theta = ', pos_tracer_theta(i),tci_t
             WRITE(7777,*) 'v_r = ',v_1_tracer(i)
             WRITE(7777,*) 'v_theta = ', v_2_tracer(i)
+            WRITE(7777,*) 'SEGEMENT:',n_ts,n_te
 c            WRITE(7777,*) 't = ',temp_tracer(i)
 c            WRITE(7777,*) 'p = ',pressure_tracer(i)
 c            WRITE(7777,*) 's = ',entropy_tracer(i)
 c            WRITE(7777,*) 'den = ',den_tracer(i) 
       END DO LOOP_PRINT
-c      WRITE(9999,*) "TEST17"
       END SUBROUTINE tracer_print
 c     ==================================================================
       FUNCTION bilineary_interpolation(arr,l1,u1,l2,u2,l3,u3,ti,negc
@@ -659,8 +659,12 @@ c$$$        if(.not.issent) then
      &  MPI_DOUBLE_PRECISION,dest,tag_ysndr,rbuffer_tl,
      &  nrecv_l*5,MPI_DOUBLE_PRECISION,
      &  src,tag_ysndr,cart_comm,mpistat,ierr)
+
+
       n_ts = n_ts - nrecv_l + nsend_l
       n_te = n_te + nrecv_r - nsend_r
+
+      
       WRITE(9999,*) "BUFFER COMMUNICATION FINISHED"
 
       if((nns + nrecv_l +nrecv_r)/=tracer_num_new) then

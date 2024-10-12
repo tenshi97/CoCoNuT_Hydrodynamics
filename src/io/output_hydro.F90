@@ -217,6 +217,7 @@ subroutine write_output_files
   use configure
   use state
   use print_stdout_mod
+  use mod_tracer_cfc only : tracer_num, n_ts, n_te, tracer_id, pos_tracer_r, pos_tracer_theta, tracer_proc
   implicit none
 ! LOCAL variables that are not in modules
 
@@ -438,7 +439,17 @@ subroutine write_output_files
      deallocate(xcart,ycart,zcart,stat=istat)
 #endif
 
+     !  Tracer Module Output
 
+     call writeq(hfile,"trid",tracer_id,"Global ID of Tracers","1","index", & 
+       (/n_ts,n_te/),(1,48*40))
+     call writeq(hfile,"trx",pos_tracer_r,"Tracer Particles X Coordinate(Spherical-Radial)","cm", &
+       "index",(/n_ts,n_te/),(1,48*40))
+     call writeq(hfile,"try",pos_tracer_r,"Tracer Particles Y Coordinate(Spherical-Polar)","cm", &
+       "index",(/n_ts,n_te/),(1,48*40))
+      
+     !  Magic Number:48 need to be replaced when it is known which variable denotes the total processes number
+     !  Tracer Module Output
      call writeq(hfile, "tm", tm, "Enclosed baryonic mass", "solarmass", "radius:xzn")
      call writeq(hfile, "tgm", tgm, "Enclosed gravitational mass", "solarmass", "radius:xzn")
      call writeq(hfile, "eph", ephhlp, "Lapse function (grav. potential)", "1", "radius:xzn")
