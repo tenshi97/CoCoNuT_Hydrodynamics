@@ -243,23 +243,6 @@ c     ==================================================================
             v_2_t = g_up_22(ir,it,1)*v_2_t-
      &      beta_up_2(ir,it,1)/alpha(ir,it,1)
             IF(tracer_proc(i)/=myproc) THEN
-                  WRITE(8888,*) "-----------------------"
-                  WRITE(8888,*) "DEBUG FOR INTEGRATION"
-                  WRITE(8888,*) "TIME=",time
-                  WRITE(8888,*) "Local ID=",i
-                  WRITE(8888,*) "V_1=",v_1_t
-                  WRITE(8888,*) "V_2=",v_2_t
-                  WRITE(8888,*) "Global ID=",tracer_id(i)
-                  WRITE(8888,*) "TRACER_PROC =",tracer_proc(i)
-                  WRITE(8888,*) "r=",pos_tracer_r(i),tracer_ci_r(i)
-                  WRITE(8888,*) "th=",pos_tracer_theta(i),
-     &            tracer_ci_theta(i)
-                  WRITE(8888,*) "INTERP VALUE FOR THE TRACER V1:"
-                  WRITE(8888,*) v_1(ir-1,it-1,1),v_1(ir-1,it,1)
-     &             ,v_1(ir,it-1,1),v_1(ir,it,1) 
-                  WRITE(8888,*) "INTERP VALUE FOR THE TRACER V2:"
-                  WRITE(8888,*) v_2(ir-1,it-1,1),v_2(ir-1,it,1)
-     &             ,v_2(ir,it-1,1),v_2(ir,it,1) 
             END IF
             IF(rkint_order.eq.1)    THEN
                   pos_tracer_r_old(i) = pos_tracer_r(i)
