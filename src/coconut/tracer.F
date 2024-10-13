@@ -705,13 +705,13 @@ c$$$        if(.not.issent) then
       deallocate(sbuffer_tl,sbuffer_tr,rbuffer_tl,
      &  rbuffer_tr,buffer_tnew)
       do i=1,tracer_num_new
-            WRITE(9999,*) "-----------------------"
-            WRITE(9999,*) "local id:",i
-            WRITE(9999,*) "global_id",tracer_id(i)
-            WRITE(9999,*) "pos_r:",pos_tracer_r(i)
-            WRITE(9999,*) "pos_theta:",pos_tracer_theta(i)
-            WRITE(9999,*) "radial ci index:",tracer_ci_r(i)
-            WRITE(9999,*) "FROM PROC:",tracer_proc(i)
+c            WRITE(9999,*) "-----------------------"
+c            WRITE(9999,*) "local id:",i
+c            WRITE(9999,*) "global_id",tracer_id(i)
+c            WRITE(9999,*) "pos_r:",pos_tracer_r(i)
+c            WRITE(9999,*) "pos_theta:",pos_tracer_theta(i)
+c            WRITE(9999,*) "radial ci index:",tracer_ci_r(i)
+c            WRITE(9999,*) "FROM PROC:",tracer_proc(i)
             call tci_t_search(i)
       end do
       END SUBROUTINE MPI_TRACER
