@@ -9,7 +9,7 @@ c     ============================================================
 
       SAVE
 
-      integer (kind=ik) :: tracer_num
+      integer (kind=ik) :: tracer_num,tracer_pt,tracer_total
       real (kind=rk), allocatable :: pos_tracer_r(:)
       real (kind=rk), allocatable :: pos_tracer_r_old(:)
       real (kind=rk), allocatable :: pos_tracer_theta(:)
@@ -44,17 +44,19 @@ c     ============================================================
       integer(kind=ik) :: i
       character*64 :: dfilename,procstr,outfilename,mpifilename
       character*64 :: suffix
-      suffix = '.dat'
+      suffix = 'dat'
       WRITE(unit=procstr,fmt='(i4)') myproc
       procstr = trim(adjustl(procstr))
-      outfilename = 'debugmpi/filen'//procstr // suffix
-      dfilename = 'debugmpi/debugn'// procstr // suffix
-      mpifilename = 'debugmpi/mpin' // procstr // suffix
+      outfilename = 'debugmpi/filen'//procstr // '.'//suffix
+      dfilename = 'debugmpi/debugn'// procstr // '.'//suffix
+      mpifilename = 'debugmpi/mpin' // procstr // '.'//suffix
 c      WRITE(unit=dfilename,fmt="('debugmpi/file',i,'.dat')") myproc
       OPEN(UNIT=7777,FILE=outfilename)
       OPEN(UNIT=8888,FILE=dfilename)
       open(UNIT=9999,FILE=mpifilename)
-      tracer_num = 40
+      tracer_pp = 40_ik
+      tracer_num = tracer_pp
+      tracer_total = tracer_pp*
       allocate(
      &  pos_tracer_r(tracer_num),
      &  pos_tracer_r_old(tracer_num),

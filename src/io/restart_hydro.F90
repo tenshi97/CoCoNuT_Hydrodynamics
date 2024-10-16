@@ -1287,7 +1287,7 @@ subroutine write_hydro()
   use configure
   use hydro_areas_mod
   use state
-
+  use tracer_cfc
   IMPLICIT NONE
 ! LOCAL variables that are not in modules
 
@@ -1378,7 +1378,6 @@ subroutine write_hydro()
   write(x_slice,"('[0:',i5,']')") qx_out
   write(y_slice,"('[0:',i5,']')") qy_out
   write(z_slice,"('[0:',i5,']')") qz_out
-
   call create_vertex_file(fd, rstfil, "hydro restart file")
   call writeq(fd, "ihvers", config%ihvers, "type of restart file: 20050101: with  temperature, 20050407: with energy", "enum")
 
