@@ -16,16 +16,9 @@ c     ============================================================
       real (kind=rk), allocatable :: pos_tracer_theta_old(:)
       real (kind=rk), allocatable :: v_1_tracer(:)
       real (kind=rk), allocatable :: v_2_tracer(:)
-      real (kind=rk), allocatable :: temp_tracer(:)
-      real (kind=rk), allocatable :: xnnu_tracer(:,:)
-      real (kind=rk), allocatable :: den_tracer(:)
-      real (kind=rk), allocatable :: pressure_tracer(:)
-      real (kind=rk), allocatable :: entropy_tracer(:)
       real (kind=rk) :: tracer_printtime = -1
       integer (kind=ik), allocatable :: tracer_ci_r(:)
       integer (kind=ik), allocatable :: tracer_ci_theta(:)
-      LOGICAL, allocatable :: neg_check(:)
-      LOGICAL, allocatable :: nan_check(:)
       integer (kind=ik), allocatable :: tracer_id(:)
       integer (kind=ik), allocatable ::tracer_proc(:)
       integer (kind=ik) n_ts,n_te
@@ -64,22 +57,13 @@ c      WRITE(unit=dfilename,fmt="('debugmpi/file',i,'.dat')") myproc
      &  pos_tracer_theta_old(tracer_num),
      &  v_1_tracer(tracer_num),
      &  v_2_tracer(tracer_num),
-     &  temp_tracer(tracer_num),
-     &  xnnu_tracer(tracer_num,1:config%qn),
-     &  den_tracer(tracer_num),
-     &  pressure_tracer(tracer_num),
-     &  entropy_tracer(tracer_num), 
      &  tracer_ci_r(tracer_num),
      &  tracer_ci_theta(tracer_num),
-     &  nan_check(tracer_num),
-     &  neg_check(tracer_num),
      &  tracer_id(tracer_num),
      &  tracer_proc(tracer_num),
      &  stat=istat)
       tracer_ci_r = -2_ik
       tracer_ci_theta =-2_ik
-      neg_check = .false.
-      nan_check = .false.
       n_ts = myproc*tracer_num+1
       n_te = myproc*tracer_num+tracer_num
       do i=1,tracer_num

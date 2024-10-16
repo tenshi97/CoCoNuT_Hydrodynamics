@@ -305,31 +305,6 @@ c            WRITE(8888,*) "----debug for v_2-----"
 
             v_2_tracer(i) = g_up_22(ir,it,1)*v_2_tracer(i)
      &      -beta_up_2(ir,it,1)/alpha(ir,it,1)
-c            WRITE(8888,*) "----debug for temp_tracer"
-c           temp_tracer(i) = bilineary_interpolation
-c    &      (t(-1:m+1,n_s-1:n_e+1,1),-1,m+1,n_s-1,n_e+1,1,1,i
-c    &      ,.true.,"temperature")
-            
-
-c            WRITE(8888,*) "----debug for xnnu"
-c            LOOP_XNNU:DO j=1,config%qn
-c            xnnu_tracer(i,j) = bilineary_interpolation
-c     &      (xnnu(-1:m+1,n_s-1:n_e+1,1,j),-1,m+1,n_s-1,n_e+1,1,1,i
-c     &      ,.false.,"xnnu")
-c            END DO LOOP_XNNU
-c            WRITE(8888,*) "----debug for density----"
-c            den_tracer(i) = bilineary_interpolation
-c     &      (rho(-1:m+1,n_s-1:n_e+1,1),-1,m+1,n_s-1,n_e+1,1,1,i
-c     &      ,.false.,"density")
-c            WRITE(8888,*) "----debug for pressure----"
-c            pressure_tracer(i) = 
-c     &      bilineary_interpolation(p(-1:m+1,n_s-1:n_e+1,1),
-c     &      -1,m+1,n_s-1,n_e+1,1,1,i,.false.,"pressure")
-c            WRITE(8888,*) "----debug for entropy----"
-c            entropy_tracer(i) = 
-c     &      bilineary_interpolation(entropy(-1:m+1,n_s-1:n_e+1,1),-1,
-c     &      m+1,n_s-1,n_e+1,1,1,i,.false.,"entropy")
-c           WRITE(9999,*) "TEST15"
       END DO LOOP_INTERP
 
       END SUBROUTINE parameter_interp
@@ -364,10 +339,6 @@ c     ==================================================================
             WRITE(7777,*) 'v_r = ',v_1_tracer(i)
             WRITE(7777,*) 'v_theta = ', v_2_tracer(i)
             WRITE(7777,*) 'SEGEMENT:',n_ts,n_te
-c            WRITE(7777,*) 't = ',temp_tracer(i)
-c            WRITE(7777,*) 'p = ',pressure_tracer(i)
-c            WRITE(7777,*) 's = ',entropy_tracer(i)
-c            WRITE(7777,*) 'den = ',den_tracer(i) 
       END DO LOOP_PRINT
       END SUBROUTINE tracer_print
 c     ==================================================================
@@ -407,50 +378,6 @@ c     ==================================================================
       end if
       val =  xit1*(xir1*arr(ir-1,it-1,1)+xir0*arr(ir,it-1,1))+xit0*
      &     (xir1*arr(ir-1,it,1)+xir0*arr(ir,it,1))
-      IF(negc.and.neg_check(ti)) THEN
-            IF(val.lt.-1e-20) THEN
-      neg_check(ti) = .false.
-      WRITE(8888,*) dbg
-      WRITE(8888,*) "basic parameters:",ti
-      WRITE(8888,*) "l1:",l1,"l2:",l2,"l3:",l3
-      WRITE(8888,*) "u1:",u1,"u2:",u2,"u3:",u3
-      WRITE(8888,*) "pos_r:",pos_r,"pos_t:",pos_t
-      WRITE(8888,*) "delta_r",delta_r(ir),"delta_t",delta_theta
-      WRITE(8888,*) "ir:",ir,"it:",it
-      WRITE(8888,*) "t_if",theta_if(it-1)
-      WRITE(8888,*) "t_ir",r_if(ir-1)
-      WRITE(8888,*) "xir0:",xir0,"xir1:",xir1
-      WRITE(8888,*) "xit0:",xit0,"xit1:",xit1
-      WRITE(8888,*) "biinterp values:"
-      WRITE(8888,*) arr(ir-1,it-1,1)
-      WRITE(8888,*) arr(ir-1,it,1)
-      WRITE(8888,*) arr(ir,it-1,1)
-      WRITE(8888,*) arr(ir,it,1)
-      WRITE(8888,*) val                  
-            END IF
-      END IF
-      IF(nan_check(ti)) THEN
-            IF(isnan(val)) THEN  
-      nan_check(ti) = .false.
-      WRITE(8888,*) dbg
-      WRITE(8888,*) "basic parameters:",ti
-      WRITE(8888,*) "l1:",l1,"l2:",l2,"l3:",l3
-      WRITE(8888,*) "u1:",u1,"u2:",u2,"u3:",u3
-      WRITE(8888,*) "pos_r:",pos_r,"pos_t:",pos_t
-      WRITE(8888,*) "delta_r",delta_r(ir),"delta_t",delta_theta
-      WRITE(8888,*) "ir:",ir,"it:",it
-      WRITE(8888,*) "t_if",theta_if(it-1)
-      WRITE(8888,*) "t_ir",r_if(ir-1)
-      WRITE(8888,*) "xir0:",xir0,"xir1:",xir1
-      WRITE(8888,*) "xit0:",xit0,"xit1:",xit1
-      WRITE(8888,*) "biinterp values:"
-      WRITE(8888,*) arr(ir-1,it-1,1)
-      WRITE(8888,*) arr(ir-1,it,1)
-      WRITE(8888,*) arr(ir,it-1,1)
-      WRITE(8888,*) arr(ir,it,1)
-      WRITE(8888,*) val                              
-            END IF
-      END IF
       END FUNCTION bilineary_interpolation 
 c     ==================================================================
       SUBROUTINE MPI_TRACER()
