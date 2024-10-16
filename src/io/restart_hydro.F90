@@ -782,6 +782,11 @@ subroutine read_hydro(ihvers_r, nxhtot,are_nh, ndtmah, bndhnx, &
 
 
   print *,'tem'
+  ! TRACER READ  RESTART
+  call readq()
+  call readq()
+  call readq()
+  ! TRACER READ  RESTART
   call readq(fd, "tem", temtot(qxs_in:qxe_in,qys_in:qye_in,qzs_in:qze_in), &
        (/qxs_in,qxe_in, qys_in,qye_in, qzs_in,qze_in/), (/1,qx_in, 1,qy_in, 1,qz_in/))
 
@@ -1379,6 +1384,14 @@ subroutine write_hydro()
   write(y_slice,"('[0:',i5,']')") qy_out
   write(z_slice,"('[0:',i5,']')") qz_out
   call create_vertex_file(fd, rstfil, "hydro restart file")
+    ! TRACER WRITE RESTART
+     call writeq(fd,"trid",tracer_id,"Global ID of Tracers","1","index", & 
+       (/n_ts,n_te/),(/1,tracer_total/))
+     call writeq(fd,"trx",pos_tracer_r,"Tracer Particles X Coordinate(Spherical-Radial)","cm", &
+       "index",(/n_ts,n_te/),(/1,tracer_total/))
+     call writeq(fd,"try",pos_tracer_theta,"Tracer Particles Y Coordinate(Spherical-Polar)","cm", &
+       "index",(/n_ts,n_te/),(/1,tracer_total/))
+  ! TRACER WRITE RESTART
   call writeq(fd, "ihvers", config%ihvers, "type of restart file: 20050101: with  temperature, 20050407: with energy", "enum")
 
   call writeq(fd, "xzl", xzltot(1:qe_nqx_out), &
