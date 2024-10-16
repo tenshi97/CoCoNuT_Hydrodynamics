@@ -776,7 +776,6 @@ c     auxiliary variables for metric solver (module metric_aux_cfc)
       call allocate_ppm_cfc
 c     TRACER NEW MODIFICATION
 
-      call allocate_tracer_cfc
 
 
 c     TRACER NEW MODIFICATION

@@ -25,7 +25,7 @@ c     ============================================================
       CONTAINS
 c     ============================================================
 
-      SUBROUTINE allocate_tracer_cfc
+      SUBROUTINE allocate_tracer_arrays
         
 c     ============================================================
       USE mo_mpi
@@ -71,7 +71,7 @@ c      WRITE(unit=dfilename,fmt="('debugmpi/file',i,'.dat')") myproc
       end do
       return
 c     xnnu 1=neutron 2=proton 3= D/ 4= T  5=3_He 6= 4_He....
-      END SUBROUTINE allocate_tracer_cfc
+      END SUBROUTINE allocate_tracer_arrays
 c     ==================================================================
 
       END MODULE tracer_cfc
