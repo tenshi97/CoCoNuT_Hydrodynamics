@@ -183,7 +183,7 @@ ccc   initial metric calculation
          delta_t_old = 0.0_rk
          delta_t = c_light * 1.0e-5_rk
 
-#if defined(OPENMP_CFC) && (defined(OPEN_MP_2D) || defined(OPEN_MP_3D)         )
+#if defined(OPENMP_CFC) && (defined(OPEN_MP_2D) || defined(OPEN_MP_3D))
 !$OMP END SINGLE
 !$OMP BARRIER
 #endif
