@@ -47,9 +47,11 @@ c      WRITE(unit=dfilename,fmt="('debugmpi/file',i,'.dat')") myproc
       OPEN(UNIT=7777,FILE=outfilename)
       OPEN(UNIT=8888,FILE=dfilename)
       open(UNIT=9999,FILE=mpifilename)
-      tracer_pp = 40_ik
+      tracer_pp = config%trpp
       tracer_num = tracer_pp
-      tracer_total = tracer_pp*
+      tracer_total = tracer_pp * nprocs
+      WRITE(7777,*) "INIT INFO:tracer per process:",tracer_pp
+      WRITE(7777,*) "INIT INFO:tracer total",tracer_total
       allocate(
      &  pos_tracer_r(tracer_num),
      &  pos_tracer_r_old(tracer_num),
