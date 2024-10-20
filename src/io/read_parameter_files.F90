@@ -1028,6 +1028,9 @@ subroutine read_parameter_files(read_mode)
   call read_line(1,print_it,"irvers",config%irvers)
 
   !tracers
+  call read_line(1,print_it)
+  call read_line(1,print_it)
+  call read_line(1,print_it)
   call read_line(1,print_it,"trpp",config%trpp)
 
   if (trim(read_mode) .eq. "grid_init") then

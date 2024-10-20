@@ -51,7 +51,10 @@ c     ==================================================================
       USE enecons_cfc
 
       USE param_rt
+
       USE tracer
+      USE tracer_cfc
+      
 #if DIMN==3
       USE filtering
       USE mesh_coarsening

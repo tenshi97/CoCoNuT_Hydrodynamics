@@ -226,7 +226,7 @@ module configure
     logical           :: brems                              !x!> use bremstrahlung
     logical           :: nickelrates                        !x!> use nickel rates
 
-    integer(kind=ik)  :: tnpp                               !x!> tracer num per particle
+    integer(kind=ik)  :: trpp                               !x!> tracer num per particle
 #ifdef WRITE_BINARY_OUTPUT
 !PERL my @type_defs = @_lines[0 .. $_line_number];
 #endif

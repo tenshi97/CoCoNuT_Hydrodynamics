@@ -9,7 +9,7 @@ c     ============================================================
 
       SAVE
 
-      integer (kind=ik) :: tracer_num,tracer_pt,tracer_total
+      integer (kind=ik) :: tracer_num,tracer_pp,tracer_total
       real (kind=rk), allocatable :: pos_tracer_r(:)
       real (kind=rk), allocatable :: pos_tracer_r_old(:)
       real (kind=rk), allocatable :: pos_tracer_theta(:)
@@ -21,6 +21,7 @@ c     ============================================================
       integer (kind=ik), allocatable :: tracer_ci_theta(:)
       integer (kind=ik), allocatable :: tracer_id(:)
       integer (kind=ik), allocatable ::tracer_proc(:)
+      integer (kind=ik) :: qyrays_t
       integer (kind=ik) n_ts,n_te
       CONTAINS
 c     ============================================================
@@ -50,8 +51,10 @@ c      WRITE(unit=dfilename,fmt="('debugmpi/file',i,'.dat')") myproc
       tracer_pp = config%trpp
       tracer_num = tracer_pp
       tracer_total = tracer_pp * nprocs
+      qyrays_t = n_e-n_s+1
       WRITE(7777,*) "INIT INFO:tracer per process:",tracer_pp
       WRITE(7777,*) "INIT INFO:tracer total",tracer_total
+      WRITE(7777,*) "INIT INFO:y-rays total",qyrays_t
       allocate(
      &  pos_tracer_r(tracer_num),
      &  pos_tracer_r_old(tracer_num),
