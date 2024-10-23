@@ -50,7 +50,7 @@ c     &  trnum_rstrt
       OPEN(UNIT=7777,FILE=outfilename)
       OPEN(UNIT=8888,FILE=dfilename)
       open(UNIT=9999,FILE=mpifilename)
-      if(.not.tracer_rstrt) then
+      if(tracer_rstrt) then
         return 
       end if
       tracer_pp = config%trpp
