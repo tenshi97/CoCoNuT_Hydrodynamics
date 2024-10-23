@@ -204,10 +204,63 @@ c     ==================================================================
       call readq(fd, "try", try_rstrt(1:trnum_rstrt))
 
       call allocate_tracer_arrays(.true.)
+
+
 ccc   Maybe I should do the restart initialization for tracers here
+      tracer_total = trnum_rstrt
+      tracer_num = 0
 
+      do i = 1, tracer_total
+        if(try_rstrt(i).ge.theta_if(n_s-1).and.
+     &  try_rstrt(i).le.theta_if(n_e)) then
+            tracer_num = tracer_num + 1
+            WRITE(7777,*) "RSTRT INFO: Tracer",i,"In Task"
+            WRITE(7777,*) "Tracer Num Now:", tracer_num
+        end if
+      end do
 
-
+      WRITE(7777,*) "RSTRT INFO:total num",tracer_num
+      allocate(
+     &  pos_tracer_r(tracer_num),
+     &  pos_tracer_r_old(tracer_num),
+     &  pos_tracer_theta(tracer_num),
+     &  pos_tracer_theta_old(tracer_num),
+     &  v_1_tracer(tracer_num),
+     &  v_2_tracer(tracer_num),
+     &  tracer_ci_r(tracer_num),
+     &  tracer_ci_theta(tracer_num),
+     &  tracer_id(tracer_num),
+     &  tracer_proc(tracer_num),
+     &  stat=istat)
+      tracer_ci_r = -2_ik
+      tracer_ci_theta =-2_ik
+      j = 0
+      n_ts = -1
+      n_te = -1
+      do i=1, tracer_total
+        if(try_rstrt(i).ge.theta_if(n_s-1).and.
+     &  try_rstrt(i).le.theta_if(n_e)) then
+               if(n_ts.lt.0) then
+                    n_ts = i
+               end if
+               n_te = i
+               j = j + 1
+               pos_tracer_r(j) = trx_rstrt(i)
+               pos_tracer_theta(j) = try_rstrt(i)
+               tracer_id(j) = tracer_id(i)
+               tracer_proc(j) = myproc
+               WRITE(7777,*) "RSTRT INFO:j-th ID",
+     &          j,tracer_id(j)
+               WRITE(7777,*) "RSTRT INFO:j-th r",
+     &          j,pos_tracer_r(j)
+           end if
+      end do
+      WRITE(7777,*) "RSTRT INFO:N_TS and N_TE:"
+     &  n_ts,n_te
+      do i=1,tracer_num
+        call tci_search(i)
+        call tci_t_search(i)
+      end do
 ccc   Next
 
       deallocate(trid_rstrt,trx_rstrt,try_rstrt)
