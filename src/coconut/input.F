@@ -255,7 +255,7 @@ ccc   Maybe I should do the restart initialization for tracers here
      &          j,pos_tracer_r(j)
            end if
       end do
-      WRITE(7777,*) "RSTRT INFO:N_TS and N_TE:"
+      WRITE(7777,*) "RSTRT INFO:N_TS and N_TE:",
      &  n_ts,n_te
       do i=1,tracer_num
         call tci_search(i)
