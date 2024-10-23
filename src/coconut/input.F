@@ -248,7 +248,7 @@ ccc   Maybe I should do the restart initialization for tracers here
                j = j + 1
                pos_tracer_r(j) = trx_rstrt(i)
                pos_tracer_theta(j) = try_rstrt(i)
-               tracer_id(j) = tracer_id(i)
+               tracer_id(j) = trid_rstrt(i)
                tracer_proc(j) = myproc
                WRITE(7777,*) "RSTRT INFO:j-th ID",
      &          j,tracer_id(j)
