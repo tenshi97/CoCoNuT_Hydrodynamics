@@ -46,6 +46,8 @@ c     ==================================================================
       use configure 
       USE gfloat_hy, ONLY: time
 
+      USE tracer_cfc
+
       IMPLICIT NONE
 
       type(datafile) :: fd
@@ -200,8 +202,14 @@ c     ==================================================================
       call readq(fd, "trid", trid_rstrt(1:trnum_rstrt))
       call readq(fd, "trx", trx_rstrt(1:trnum_rstrt))
       call readq(fd, "try", try_rstrt(1:trnum_rstrt))
-c     allocate tracer arrays for restarting model
-      allocate_tracer_arrays(.true.)
+
+      call allocate_tracer_arrays(.true.)
+ccc   Maybe I should do the restart initialization for tracers here
+
+
+
+ccc   Next
+
       deallocate(trid_rstrt,trx_rstrt,try_rstrt)
       print *,'Closing file'
       call close_data_file(fd)
