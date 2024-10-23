@@ -51,6 +51,13 @@ c     ==================================================================
       type(datafile) :: fd
 
       integer (kind=ik) :: i, j, k, l
+      
+      integer :: istat
+      integer (kind=ik) :: trnum_rstrt
+      integer (kind=ik), allocatable :: trid_rstrt(:)
+      real(kind=rk), allocatable :: trx_rstrt(:)
+      real(kind=rk), allocatable :: try_rstrt(:)
+
       logical :: perturb
 
 #ifdef READ_OLD_RESTART_FILES 
@@ -182,8 +189,20 @@ c     ==================================================================
      &  psi_old (1 : m, n_s : n_e, o_s : o_e)
 
 #endif /* CFC_MHD */
+      
+      call readq(fd, "trnum", trnum_rstrt)
+      allocate(
+     &  trid_rstrt(trnum_rstrt),
+     &  trx_rstrt(trnum_rstrt),
+     &  try_rstrt(trnum_rstrt),
+     &  stat=istat)
 
-
+      call readq(fd, "trid", trid_rstrt(1:trnum_rstrt))
+      call readq(fd, "trx", trx_rstrt(1:trnum_rstrt))
+      call readq(fd, "try", try_rstrt(1:trnum_rstrt))
+c     allocate tracer arrays for restarting model
+      allocate_tracer_arrays(.true.)
+      deallocate(trid_rstrt,trx_rstrt,try_rstrt)
       print *,'Closing file'
       call close_data_file(fd)
 

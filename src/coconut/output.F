@@ -24,6 +24,8 @@ c     ==================================================================
       USE conserved_cfc
       USE metric_cfc
       USE nutra_cfc
+
+      USE tracer_cfc
       
       USE nucparam, only : name_xnuc
 
@@ -162,7 +164,18 @@ c     ==================================================================
      &     'radius:xzn', 'theta:yzn', 'phi:zzn',
      &     (/1,m, n_s,n_e, o_s,o_e/), 
      &     (/1,m, 1,n, 1,o /))
+      call writeq(pfile, "emid", emid(1:config%iemax), 'energy bin center', 'MeV', 'bin:'//frange(config%iemax))
+
 #endif /*CFC_MHD */
+
+      call writeq(fd, "trnum", tracer_total, 
+     &     'transport timestep number' , '1')
+      call writeq(fd,"trid",tracer_id,"ID","1","index",
+     &     (/n_ts,n_te/),(/1,tracer_total/))
+      call writeq(fd,"trx",pos_tracer_r,"Tr X","cm",
+     &     "index",(/n_ts,n_te/),(/1,tracer_total/))
+      call writeq(fd,"try",pos_tracer_theta,"Tr Y","cm",
+     &  "index",(/n_ts,n_te/),(/1,tracer_total/))
     
       call close_data_file(fd)
 

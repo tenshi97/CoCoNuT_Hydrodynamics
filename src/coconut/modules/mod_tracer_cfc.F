@@ -26,35 +26,56 @@ c     ============================================================
       CONTAINS
 c     ============================================================
 
-      SUBROUTINE allocate_tracer_arrays
+      SUBROUTINE allocate_tracer_arrays(tracer_rstrt)
         
 c     ============================================================
       USE mo_mpi
       USE precision
       USE size_cfc
+      USE gr_input, only: trid_rstrt, trx_rstrt, try_rstrt, 
+     &  trnum_rstrt
       IMPLICIT NONE
       
       integer :: istat
-      integer(kind=ik) :: i
+      integer(kind=ik) :: i,j
       character*64 :: dfilename,procstr,outfilename,mpifilename
       character*64 :: suffix
+      logical, intent(in) :: tracer_rstrt
       suffix = 'dat'
       WRITE(unit=procstr,fmt='(i4)') myproc
       procstr = trim(adjustl(procstr))
-      outfilename = 'debugmpi/filen'//procstr // '.'//suffix
-      dfilename = 'debugmpi/debugn'// procstr // '.'//suffix
-      mpifilename = 'debugmpi/mpin' // procstr // '.'//suffix
-c      WRITE(unit=dfilename,fmt="('debugmpi/file',i,'.dat')") myproc
+      outfilename = 'debugmpi/file'//procstr // '.'//suffix
+      dfilename = 'debugmpi/debug'// procstr // '.'//suffix
+      mpifilename = 'debugmpi/mpi' // procstr // '.'//suffix
       OPEN(UNIT=7777,FILE=outfilename)
       OPEN(UNIT=8888,FILE=dfilename)
       open(UNIT=9999,FILE=mpifilename)
-      tracer_pp = config%trpp
-      tracer_num = tracer_pp
-      tracer_total = tracer_pp * nprocs
-      qyrays_t = n_e-n_s+1
-      WRITE(7777,*) "INIT INFO:tracer per process:",tracer_pp
-      WRITE(7777,*) "INIT INFO:tracer total",tracer_total
-      WRITE(7777,*) "INIT INFO:y-rays total",qyrays_t
+      if(.not.tracer_rstrt) then
+        tracer_pp = config%trpp
+        tracer_num = tracer_pp
+        tracer_total = tracer_pp * nprocs
+        qyrays_t = n_e-n_s+1
+        WRITE(7777,*) "INIT INFO:tracer per process:",tracer_pp
+        WRITE(7777,*) "INIT INFO:tracer total",tracer_total
+        WRITE(7777,*) "INIT INFO:y-rays total",qyrays_t
+      else
+        tracer_total = trnum_rstrt
+        qyrays_t = n_e-n_s+1
+        tracer_num = 0
+        WRITE(7777,*) "RSTRT INFO:tracer per process:",tracer_pp
+        WRITE(7777,*) "RSTRT INFO:trnum_rstrt",trnum_rstrt
+        WRITE(7777,*) "RSTRT INFO:tracer total",tracer_total
+        WRITE(7777,*) "RSTRT INFO:y-rays total",qyrays_t
+        do i = 1,tracer_total
+            if(try_rstrt(i).ge.theta_if(n_s-1).and.
+     &      try_rstrt(i).le.theta_if(n_e)) then
+                tracer_num = tracer_num + 1
+                WRITE(7777,*) "RSTRT INFO: Tracer",i,"In Task"
+                WRITE(7777,*) "Tracer Num Now:", tracer_num
+            end if
+        end do
+        WRITE(7777,*) "RSTRT INFO:Tracer Num", tracer_num
+      end if
       allocate(
      &  pos_tracer_r(tracer_num),
      &  pos_tracer_r_old(tracer_num),
@@ -71,14 +92,26 @@ c      WRITE(unit=dfilename,fmt="('debugmpi/file',i,'.dat')") myproc
       tracer_ci_theta =-2_ik
       n_ts = myproc*tracer_num+1
       n_te = myproc*tracer_num+tracer_num
-      do i=1,tracer_num
+      if(.not.tracer_rstrt) then
+        do i=1,tracer_num
             tracer_id(i) = myproc*tracer_num+i
-      end do
+        end do
+      else
+        j = 0
+        do i = 1,tracer_total
+            if(try_rstrt(i).ge.theta_if(n_s-1).and.
+     &      try_rstrt(i).le.theta_if(n_e)) then
+                j = j + 1
+                pos_tracer_r(j) = trx_rstrt(i)
+                pos_tracer_theta(j) = try_rstrt(i)
+                tracer_id(j) = trid_rstrt(i)
+                tracer_proc(j) = myproc
+            end if
+        end do
+      end if
+
       return
 c     xnnu 1=neutron 2=proton 3= D/ 4= T  5=3_He 6= 4_He....
       END SUBROUTINE allocate_tracer_arrays
 c     ==================================================================
-
       END MODULE tracer_cfc
-
-c     ==================================================================

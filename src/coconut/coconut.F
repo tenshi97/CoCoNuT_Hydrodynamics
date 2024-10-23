@@ -267,8 +267,10 @@ ccc   set old time steps as dummy on the first time slice
       if (config%use_network) then
          call init_network
       endif
-      call allocate_tracer_arrays
-      call tracer_position_init
+      if (.not.restart) then
+         call allocate_tracer_arrays(.false.)
+         call tracer_position_init
+      end if
       return
 
       END SUBROUTINE init_coconut
