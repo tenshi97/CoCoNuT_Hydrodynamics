@@ -47,6 +47,7 @@ c     ==================================================================
       USE gfloat_hy, ONLY: time
 
       USE tracer_cfc
+      USE tracer, only: tci_search,tci_t_search
 
       IMPLICIT NONE
 
