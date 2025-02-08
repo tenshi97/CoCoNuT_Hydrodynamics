@@ -1137,8 +1137,8 @@ subroutine init(progenitor)
        call readq(f, "vertex/rqi", p%rqi)
        call readq(f, "vertex/rhoi", p%rhoi)
        call readq(f, "vertex/tmpi", p%tmpi)
-       call readq(f, "original/m_enclosed", p%mmi)
-
+!       call readq(f, "original/m_enclosed", p%mmi)
+! Modified at 20250202 to read new progenitor
 !PERL-START for my $var ("sti", "pri", "eni") {
        if (exists_in_file(f, "vertex/@[[$var]]")) then
          write(*,*) "Progenitor file contains @[[$var]]"
@@ -1163,9 +1163,13 @@ subroutine init(progenitor)
           
        allocate(xnu(n_zones,n_species))
        allocate(nuclei(n_species))
+ !      call readq(f, "vertex/xni", xnu)
+ !      call readq(f, "vertex/nuclei", nuclei)
        call readq(f, "vertex/xni", xnu)
-       call readq(f, "vertex/nuclei", nuclei)
-
+        !call readq(f, "vertex/nuclei", nuclei)                                                                              
+       nuclei = (/"    n", "    p", "  He3", "  He4", "  N14", "  C12", "  O16", " Ne20", " Mg24", " Si28", &
+            "  S32", " Ar36", " Ca40", " Ti44", " Cr48", " Fe52", " Fe52", " Ni56"/)
+       
        ! sort in the composition
        allocate(xni_index(n_species))
        do i = 1, n_species
