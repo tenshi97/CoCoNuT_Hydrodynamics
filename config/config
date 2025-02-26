@@ -3,20 +3,20 @@
 ' ---------------------------------------------------------------------'
 ' calculation mode: possible options are.....' 'calculation'  'override'
 ' collapse, bounce, postbounce, override.                              '
-' file name of initial progenitor model. ....' 'progenitor' 's15-2007.h5'
+' file name of initial progenitor model. ....' 'progenitor' '20m_old_cbm.h5'
 ' ... setup by rho-t-ye, rho-p-ye or rho-s-ye' 'setup_mode' 'rho-t-ye'
 ' ---------------------------------------------------------------------'
 ' job and output control                                               '
 '                                                                      '
-' model name as used in filenames ...........' 'modelname' 's15n'
+' model name as used in filenames ...........' 'modelname' '20m_old'
 ' maximum time for this run (in sec).........' 'cpumax'    860000
 ' interpret as CPU (0) or WALL CLOCK (1) time' 'wcrem'     0
-' number of timesteps for this job ..........' 'nend'      500000
-' maximum time for this job (in sec) ........' 'tmax'      0.4
+' number of timesteps for this job ..........' 'nend'      120000
+' maximum time for this job (in sec) ........' 'tmax'      2.0
 ' start new sequence, if  IRSTRT = 0 ........' 'irstrt'    0
 ' possible values are 0 (new), 1 (restart), and 2 (restart afer remap) '
 ' suffix of first output file ...............' 'suffix'    'aa'
-' store restart file after NRSTRT timesteps .' 'nrstrt'    2000
+' store restart file after NRSTRT timesteps .' 'nrstrt'    1000
 ' store restart file after TRSTRT seconds ...' 'trstrt'    4e-3
 ' maximum number of timesteps between output ' 'nout'      400
 ' maximum physical time between output.......' 'tout'      1e-3
@@ -208,5 +208,5 @@
 ' ---------------------------------------------------------------------'
 '                                                                      '
 ' tracer module parameters                                             '
-' tracer particles per task initially.......' 'trpp'       60
+' tracer particles per task initially.......' 'trpp'       360
 '======================================================================'
